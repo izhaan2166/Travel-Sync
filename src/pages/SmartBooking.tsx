@@ -3,51 +3,7 @@ import axios from 'axios';
 import { Navigation } from '../components/Navigation';
 import { Plane, Search, ExternalLink, Calendar, HelpCircle, Info, Compass } from 'lucide-react';
 import config from '../../config';
-
-// Major global airports dataset
-const AIRPORTS = [
-  { code: 'JED', name: 'King Abdulaziz International Airport', city: 'Jeddah', country: 'Saudi Arabia' },
-  { code: 'RUH', name: 'King Khalid International Airport', city: 'Riyadh', country: 'Saudi Arabia' },
-  { code: 'DMM', name: 'King Fahd International Airport', city: 'Dammam', country: 'Saudi Arabia' },
-  { code: 'MED', name: 'Prince Mohammad bin Abdulaziz Airport', city: 'Medina', country: 'Saudi Arabia' },
-  { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'United Arab Emirates' },
-  { code: 'AUH', name: 'Zayed International Airport', city: 'Abu Dhabi', country: 'United Arab Emirates' },
-  { code: 'DOH', name: 'Hamad International Airport', city: 'Doha', country: 'Qatar' },
-  { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York', country: 'United States' },
-  { code: 'LAX', name: 'Los Angeles International Airport', city: 'Los Angeles', country: 'United States' },
-  { code: 'ORD', name: 'O\'Hare International Airport', city: 'Chicago', country: 'United States' },
-  { code: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'United Kingdom' },
-  { code: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris', country: 'France' },
-  { code: 'HND', name: 'Haneda Airport', city: 'Tokyo', country: 'Japan' },
-  { code: 'NRT', name: 'Narita International Airport', city: 'Tokyo', country: 'Japan' },
-  { code: 'SIN', name: 'Changi Airport', city: 'Singapore', country: 'Singapore' },
-  { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj Airport', city: 'Mumbai', country: 'India' },
-  { code: 'DEL', name: 'Indira Gandhi International Airport', city: 'Delhi', country: 'India' },
-  { code: 'IST', name: 'Istanbul Airport', city: 'Istanbul', country: 'Turkey' },
-  { code: 'AMS', name: 'Schiphol Airport', city: 'Amsterdam', country: 'Netherlands' },
-  { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt', country: 'Germany' },
-  { code: 'MUC', name: 'Munich Airport', city: 'Munich', country: 'Germany' },
-  { code: 'FCO', name: 'Leonardo da Vinci-Fiumicino Airport', city: 'Rome', country: 'Italy' },
-  { code: 'MAD', name: 'Adolfo Suárez Madrid-Barajas Airport', city: 'Madrid', country: 'Spain' },
-  { code: 'BCN', name: 'Barcelona-El Prat Airport', city: 'Barcelona', country: 'Spain' },
-  { code: 'SYD', name: 'Kingsford Smith Airport', city: 'Sydney', country: 'Australia' },
-  { code: 'MEL', name: 'Melbourne Airport', city: 'Melbourne', country: 'Australia' },
-  { code: 'AKL', name: 'Auckland Airport', city: 'Auckland', country: 'New Zealand' },
-  { code: 'ICN', name: 'Incheon International Airport', city: 'Seoul', country: 'South Korea' },
-  { code: 'HKG', name: 'Hong Kong International Airport', city: 'Hong Kong', country: 'Hong Kong' },
-  { code: 'BKK', name: 'Suvarnabhumi Airport', city: 'Bangkok', country: 'Thailand' },
-  { code: 'KUL', name: 'Kuala Lumpur International Airport', city: 'Kuala Lumpur', country: 'Malaysia' },
-  { code: 'CGK', name: 'Soekarno-Hatta International Airport', city: 'Jakarta', country: 'Indonesia' },
-  { code: 'CAI', name: 'Cairo International Airport', city: 'Cairo', country: 'Egypt' },
-  { code: 'JNB', name: 'O.R. Tambo International Airport', city: 'Johannesburg', country: 'South Africa' },
-  { code: 'CPT', name: 'Cape Town International Airport', city: 'Cape Town', country: 'South Africa' },
-  { code: 'YYZ', name: 'Toronto Pearson International Airport', city: 'Toronto', country: 'Canada' },
-  { code: 'YVR', name: 'Vancouver International Airport', city: 'Vancouver', country: 'Canada' },
-  { code: 'MEX', name: 'Mexico City International Airport', city: 'Mexico City', country: 'Mexico' },
-  { code: 'GRU', name: 'Guarulhos International Airport', city: 'São Paulo', country: 'Brazil' },
-  { code: 'GIG', name: 'Galeão International Airport', city: 'Rio de Janeiro', country: 'Brazil' },
-  { code: 'EZE', name: 'Ministro Pistarini International Airport', city: 'Buenos Aires', country: 'Argentina' }
-];
+import { AIRPORTS } from '../data/airports';
 
 export function SmartBooking({ onBack }: { onBack: () => void }) {
   const [formData, setFormData] = useState({
