@@ -4,21 +4,102 @@ import { Navigation } from '../components/Navigation';
 import { Plane, Search, ExternalLink, Calendar, HelpCircle, Info, Compass } from 'lucide-react';
 import config from '../../config';
 
+// Major global airports dataset
+const AIRPORTS = [
+  { code: 'JED', name: 'King Abdulaziz International Airport', city: 'Jeddah', country: 'Saudi Arabia' },
+  { code: 'RUH', name: 'King Khalid International Airport', city: 'Riyadh', country: 'Saudi Arabia' },
+  { code: 'DMM', name: 'King Fahd International Airport', city: 'Dammam', country: 'Saudi Arabia' },
+  { code: 'MED', name: 'Prince Mohammad bin Abdulaziz Airport', city: 'Medina', country: 'Saudi Arabia' },
+  { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'United Arab Emirates' },
+  { code: 'AUH', name: 'Zayed International Airport', city: 'Abu Dhabi', country: 'United Arab Emirates' },
+  { code: 'DOH', name: 'Hamad International Airport', city: 'Doha', country: 'Qatar' },
+  { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York', country: 'United States' },
+  { code: 'LAX', name: 'Los Angeles International Airport', city: 'Los Angeles', country: 'United States' },
+  { code: 'ORD', name: 'O\'Hare International Airport', city: 'Chicago', country: 'United States' },
+  { code: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'United Kingdom' },
+  { code: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris', country: 'France' },
+  { code: 'HND', name: 'Haneda Airport', city: 'Tokyo', country: 'Japan' },
+  { code: 'NRT', name: 'Narita International Airport', city: 'Tokyo', country: 'Japan' },
+  { code: 'SIN', name: 'Changi Airport', city: 'Singapore', country: 'Singapore' },
+  { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj Airport', city: 'Mumbai', country: 'India' },
+  { code: 'DEL', name: 'Indira Gandhi International Airport', city: 'Delhi', country: 'India' },
+  { code: 'IST', name: 'Istanbul Airport', city: 'Istanbul', country: 'Turkey' },
+  { code: 'AMS', name: 'Schiphol Airport', city: 'Amsterdam', country: 'Netherlands' },
+  { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt', country: 'Germany' },
+  { code: 'MUC', name: 'Munich Airport', city: 'Munich', country: 'Germany' },
+  { code: 'FCO', name: 'Leonardo da Vinci-Fiumicino Airport', city: 'Rome', country: 'Italy' },
+  { code: 'MAD', name: 'Adolfo Suárez Madrid-Barajas Airport', city: 'Madrid', country: 'Spain' },
+  { code: 'BCN', name: 'Barcelona-El Prat Airport', city: 'Barcelona', country: 'Spain' },
+  { code: 'SYD', name: 'Kingsford Smith Airport', city: 'Sydney', country: 'Australia' },
+  { code: 'MEL', name: 'Melbourne Airport', city: 'Melbourne', country: 'Australia' },
+  { code: 'AKL', name: 'Auckland Airport', city: 'Auckland', country: 'New Zealand' },
+  { code: 'ICN', name: 'Incheon International Airport', city: 'Seoul', country: 'South Korea' },
+  { code: 'HKG', name: 'Hong Kong International Airport', city: 'Hong Kong', country: 'Hong Kong' },
+  { code: 'BKK', name: 'Suvarnabhumi Airport', city: 'Bangkok', country: 'Thailand' },
+  { code: 'KUL', name: 'Kuala Lumpur International Airport', city: 'Kuala Lumpur', country: 'Malaysia' },
+  { code: 'CGK', name: 'Soekarno-Hatta International Airport', city: 'Jakarta', country: 'Indonesia' },
+  { code: 'CAI', name: 'Cairo International Airport', city: 'Cairo', country: 'Egypt' },
+  { code: 'JNB', name: 'O.R. Tambo International Airport', city: 'Johannesburg', country: 'South Africa' },
+  { code: 'CPT', name: 'Cape Town International Airport', city: 'Cape Town', country: 'South Africa' },
+  { code: 'YYZ', name: 'Toronto Pearson International Airport', city: 'Toronto', country: 'Canada' },
+  { code: 'YVR', name: 'Vancouver International Airport', city: 'Vancouver', country: 'Canada' },
+  { code: 'MEX', name: 'Mexico City International Airport', city: 'Mexico City', country: 'Mexico' },
+  { code: 'GRU', name: 'Guarulhos International Airport', city: 'São Paulo', country: 'Brazil' },
+  { code: 'GIG', name: 'Galeão International Airport', city: 'Rio de Janeiro', country: 'Brazil' },
+  { code: 'EZE', name: 'Ministro Pistarini International Airport', city: 'Buenos Aires', country: 'Argentina' }
+];
+
 export function SmartBooking({ onBack }: { onBack: () => void }) {
   const [formData, setFormData] = useState({
     from: '',
     to: '',
     departureDate: '',
-    returnDate: '', // Optional for round-trip flights
-    currency: 'USD', // Default currency
+    returnDate: '',
   });
+  
+  const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
+  const [toSuggestions, setToSuggestions] = useState<any[]>([]);
+  const [showFromDropdown, setShowFromDropdown] = useState(false);
+  const [showToDropdown, setShowToDropdown] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [flightData, setFlightData] = useState<any>(null);
   const [error, setError] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+  const filterAirports = (val: string) => {
+    if (!val) return [];
+    const searchVal = val.toLowerCase();
+    return AIRPORTS.filter(
+      (a) =>
+        a.code.toLowerCase().includes(searchVal) ||
+        a.name.toLowerCase().includes(searchVal) ||
+        a.city.toLowerCase().includes(searchVal) ||
+        a.country.toLowerCase().includes(searchVal)
+    ).slice(0, 5); // Return top 5 suggestions
+  };
+
+  const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData((prev) => ({ ...prev, from: val }));
+    setFromSuggestions(filterAirports(val));
+    setShowFromDropdown(true);
+  };
+
+  const handleToChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFormData((prev) => ({ ...prev, to: val }));
+    setToSuggestions(filterAirports(val));
+    setShowToDropdown(true);
+  };
+
+  const handleSelectFrom = (code: string) => {
+    setFormData((prev) => ({ ...prev, from: code }));
+    setShowFromDropdown(false);
+  };
+
+  const handleSelectTo = (code: string) => {
+    setFormData((prev) => ({ ...prev, to: code }));
+    setShowToDropdown(false);
   };
 
   const openGoogleFlights = () => {
@@ -63,7 +144,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
 
       const token = authResponse.data.access_token;
 
-      // Step 2: Fetch flight offers
+      // Step 2: Fetch flight offers in default USD currency
       const flightsResponse = await axios.get(
         'https://test.api.amadeus.com/v2/shopping/flight-offers',
         {
@@ -74,7 +155,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
             departureDate: formData.departureDate,
             returnDate: formData.returnDate || undefined, // Optional
             adults: 1,
-            currencyCode: formData.currency,
+            currencyCode: 'USD',
           },
         }
       );
@@ -94,6 +175,9 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
 
   // Map of IATA codes to airport names and help/service numbers
   const airportDetails = {
+    JED: { name: 'King Abdulaziz International Airport', serviceNumber: '+966 9200 11233' },
+    RUH: { name: 'King Khalid International Airport', serviceNumber: '+966 9200 20090' },
+    DMM: { name: 'King Fahd International Airport', serviceNumber: '+966 13 883 1000' },
     JFK: { name: 'John F. Kennedy International Airport', serviceNumber: '1-800-JFK-INFO' },
     LHR: { name: 'London Heathrow Airport', serviceNumber: '+44 844 335 1801' },
     CDG: { name: 'Charles de Gaulle Airport', serviceNumber: '+33 1 70 36 60 50' },
@@ -133,29 +217,72 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
             </h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                {/* From Field */}
+                <div className="relative">
                   <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">From</label>
                   <input
                     type="text"
-                    name="from"
-                    maxLength={3}
-                    placeholder="e.g. JFK"
+                    placeholder="Origin (e.g. JED)"
                     value={formData.from}
-                    onChange={handleInputChange}
+                    onChange={handleFromChange}
+                    onFocus={() => {
+                      setShowFromDropdown(true);
+                      setFromSuggestions(filterAirports(formData.from));
+                    }}
+                    onBlur={() => setTimeout(() => setShowFromDropdown(false), 200)}
                     className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white uppercase outline-none transition"
                   />
+                  {showFromDropdown && fromSuggestions.length > 0 && (
+                    <div className="absolute z-50 left-0 right-0 mt-1 bg-[#0f172a] border border-slate-800 rounded-xl max-h-60 overflow-y-auto shadow-2xl">
+                      {fromSuggestions.map((a) => (
+                        <div
+                          key={a.code}
+                          onMouseDown={() => handleSelectFrom(a.code)}
+                          className="p-3 hover:bg-sky-500/10 hover:text-sky-400 cursor-pointer flex justify-between items-center text-left text-xs transition border-b border-slate-850 last:border-b-0"
+                        >
+                          <div>
+                            <p className="font-bold text-slate-200">{a.city} ({a.code})</p>
+                            <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{a.name}</p>
+                          </div>
+                          <span className="text-[10px] text-slate-500 shrink-0 ml-1">{a.country}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div>
+
+                {/* To Field */}
+                <div className="relative">
                   <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">To</label>
                   <input
                     type="text"
-                    name="to"
-                    maxLength={3}
-                    placeholder="e.g. LHR"
+                    placeholder="Destination (e.g. LHR)"
                     value={formData.to}
-                    onChange={handleInputChange}
+                    onChange={handleToChange}
+                    onFocus={() => {
+                      setShowToDropdown(true);
+                      setToSuggestions(filterAirports(formData.to));
+                    }}
+                    onBlur={() => setTimeout(() => setShowToDropdown(false), 200)}
                     className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white uppercase outline-none transition"
                   />
+                  {showToDropdown && toSuggestions.length > 0 && (
+                    <div className="absolute z-50 left-0 right-0 mt-1 bg-[#0f172a] border border-slate-800 rounded-xl max-h-60 overflow-y-auto shadow-2xl">
+                      {toSuggestions.map((a) => (
+                        <div
+                          key={a.code}
+                          onMouseDown={() => handleSelectTo(a.code)}
+                          className="p-3 hover:bg-sky-500/10 hover:text-sky-400 cursor-pointer flex justify-between items-center text-left text-xs transition border-b border-slate-850 last:border-b-0"
+                        >
+                          <div>
+                            <p className="font-bold text-slate-200">{a.city} ({a.code})</p>
+                            <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{a.name}</p>
+                          </div>
+                          <span className="text-[10px] text-slate-500 shrink-0 ml-1">{a.country}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -165,7 +292,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                   type="date"
                   name="departureDate"
                   value={formData.departureDate}
-                  onChange={handleInputChange}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, departureDate: e.target.value }))}
                   className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition"
                 />
               </div>
@@ -176,25 +303,9 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                   type="date"
                   name="returnDate"
                   value={formData.returnDate}
-                  onChange={handleInputChange}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, returnDate: e.target.value }))}
                   className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Currency</label>
-                <select
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleInputChange}
-                  className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition"
-                >
-                  <option value="USD">US Dollar (USD)</option>
-                  <option value="EUR">Euro (EUR)</option>
-                  <option value="GBP">British Pound (GBP)</option>
-                  <option value="JPY">Japanese Yen (JPY)</option>
-                  <option value="INR">Indian Rupee (INR)</option>
-                </select>
               </div>
 
               {/* Action Buttons */}
@@ -272,7 +383,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                         <div className="flex justify-between items-start mb-3">
                           <h4 className="text-md font-bold text-sky-400">{fetchAirlineName(flight.validatingAirlineCodes[0])}</h4>
                           <span className="text-xs font-bold text-indigo-400 font-mono">
-                            {formData.currency} {flight.price.total}
+                            USD {flight.price.total}
                           </span>
                         </div>
                         
