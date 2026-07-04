@@ -7,48 +7,38 @@
 }
 
 body {
-  @apply bg-black text-white;
+  @apply bg-[#0b0f19] text-slate-100 font-sans antialiased;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+  filter: invert(0.8) sepia(1) saturate(5) hue-rotate(150deg);
 }
 
-@keyframes greenGlow {
+@keyframes themeGlow {
   0%, 100% {
-    box-shadow: 0 0 5px #22c55e, 0 0 10px #22c55e, 0 0 15px #22c55e;
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15), 0 0 0 1px rgba(14, 165, 233, 0.2);
   }
   50% {
-    box-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e, 0 0 30px #22c55e;
-  }
-}
-
-@keyframes redGlow {
-  0%, 100% {
-    box-shadow: 0 0 5px #ef4444, 0 0 10px #ef4444, 0 0 15px #ef4444;
-  }
-  50% {
-    box-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444, 0 0 30px #ef4444;
+    box-shadow: 0 4px 25px rgba(99, 102, 241, 0.3), 0 0 0 1px rgba(99, 102, 241, 0.4);
   }
 }
 
 .neon-card {
-  @apply border border-green-500/30 hover:border-green-400 transition-all duration-300;
+  @apply border border-slate-800 bg-[#0f172a]/60 backdrop-blur-md rounded-2xl p-6 transition-all duration-300 hover:border-sky-500/50 hover:shadow-lg;
 }
 
 .neon-card:hover {
-  animation: greenGlow 2s infinite;
+  animation: themeGlow 3s infinite;
 }
 
 .neon-card-red {
-  @apply border border-red-500/30 hover:border-red-400 transition-all duration-300;
+  @apply border border-slate-800 bg-[#0f172a]/60 backdrop-blur-md rounded-2xl p-6 transition-all duration-300 hover:border-red-500/50 hover:shadow-lg;
 }
 
 .neon-card-red:hover {
-  animation: redGlow 2s infinite;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(239, 68, 68, 0.3);
 }
 
-.neon-text-red {
-  @apply text-red-400;
-  text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444;
+.gradient-text {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-400 to-indigo-400;
 }

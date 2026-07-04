@@ -9,37 +9,37 @@ const features = [
   { 
     icon: Plane, 
     title: 'Smart Booking', 
-    desc: 'Real-time flight updates and alternatives',
+    desc: 'Real-time flight search & direct Google Flights comparison',
     id: 'smart-booking'
   },
   { 
     icon: Map, 
     title: 'Interactive Maps', 
-    desc: 'Visualize your entire journey',
+    desc: 'Visualize your entire journey and track weather routes',
     id: 'interactive-maps'
   },
   { 
     icon: Calendar, 
     title: 'Dynamic Planning', 
-    desc: 'Adaptive scheduling with AI assistance',
+    desc: 'Adaptive scheduling with intelligent ML recommendations',
     id: 'dynamic-planning'
   },
   { 
     icon: Clock, 
     title: 'Real-Time Updates', 
-    desc: 'Stay informed about changes and delays',
+    desc: 'Stay informed about changes and delays during the trip',
     id: 'real-time-updates'
   },
   { 
     icon: Shield, 
     title: 'Secure Storage', 
-    desc: 'Keep your travel documents safe',
+    desc: 'Keep your digital travel documents safe and encrypted',
     id: 'secure-storage'
   },
   { 
     icon: Share2, 
     title: 'Easy Sharing', 
-    desc: 'Collaborate with co-travelers',
+    desc: 'Collaborate and share itineraries with co-travelers',
     id: 'easy-sharing'
   }
 ];
@@ -50,12 +50,12 @@ export function FeatureGrid({ onFeatureClick }: Props) {
       {features.map(({ icon: Icon, title, desc, id }) => (
         <div
           key={title}
-          className="neon-card bg-black/50 p-6 rounded-xl backdrop-blur-lg cursor-pointer hover:scale-105 transition-transform"
+          className="neon-card bg-[#0f172a]/50 p-6 rounded-2xl border border-slate-800 cursor-pointer hover:scale-[1.03] hover:border-sky-500/30 transition-all duration-300 shadow-md flex flex-col items-center text-center"
           onClick={() => onFeatureClick(id)}
         >
-          <Icon className="w-8 h-8 text-green-400 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-green-400 mb-2">{title}</h3>
-          <p className="text-gray-400">{desc}</p>
+          <Icon className="w-8 h-8 text-sky-400 mb-4" />
+          <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 mb-2">{title}</h3>
+          <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
         </div>
       ))}
     </div>

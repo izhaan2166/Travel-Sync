@@ -33,13 +33,13 @@ export function AddItemForm({ onAdd }: Props) {
     });
   };
 
-  const inputClasses = "w-full bg-black border border-green-500/30 rounded-lg p-2 text-gray-300 focus:border-green-400 focus:ring-1 focus:ring-green-400 placeholder-gray-600";
+  const inputClasses = "w-full bg-[#070b13] border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 placeholder-slate-700 outline-none transition";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Type</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Type</label>
           <select
             value={formData.type}
             onChange={(e) => setFormData({ ...formData, type: e.target.value as TravelItem['type'] })}
@@ -52,7 +52,7 @@ export function AddItemForm({ onAdd }: Props) {
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Title</label>
           <input
             type="text"
             value={formData.title}
@@ -63,7 +63,7 @@ export function AddItemForm({ onAdd }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Start Date</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Start Date</label>
           <input
             type="date"
             value={formData.startDate}
@@ -74,7 +74,7 @@ export function AddItemForm({ onAdd }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">End Date</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">End Date</label>
           <input
             type="date"
             value={formData.endDate}
@@ -84,7 +84,7 @@ export function AddItemForm({ onAdd }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Location</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Location</label>
           <input
             type="text"
             value={formData.location}
@@ -95,7 +95,7 @@ export function AddItemForm({ onAdd }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Cost</label>
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Cost</label>
           <input
             type="number"
             value={formData.cost}
@@ -107,7 +107,7 @@ export function AddItemForm({ onAdd }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Notes</label>
+        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Notes</label>
         <textarea
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -118,7 +118,7 @@ export function AddItemForm({ onAdd }: Props) {
 
       <button
         type="submit"
-        className="w-full bg-green-500/10 hover:bg-green-500/20 text-green-400 font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all neon-card"
+        className="w-full bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition duration-200 border border-sky-500/20 hover:border-sky-500/40 hover:shadow-md"
       >
         <Plus className="w-4 h-4" />
         Add Item

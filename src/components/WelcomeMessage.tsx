@@ -3,8 +3,8 @@ import React from 'react';
 export function WelcomeMessage() {
   return (
     <div className="max-w-2xl mx-auto text-center space-y-6 mb-12">
-      <h2 className="text-2xl font-semibold text-green-400">Welcome to TravelSync!</h2>
-      <div className="space-y-4 text-gray-300 leading-relaxed">
+      <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Welcome to TravelSync!</h2>
+      <div className="space-y-4 text-slate-300 leading-relaxed font-normal">
         <p>
           We're thrilled to have you here. At TravelSync, we are dedicated to delivering 
           exceptional travel solutions that make your journey seamless and unforgettable.

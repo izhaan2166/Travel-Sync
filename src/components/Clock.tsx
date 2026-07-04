@@ -9,7 +9,7 @@ export function Clock() {
   }, []);
 
   return (
-    <div className="font-mono text-4xl text-green-400 animate-pulse">
+    <div className="font-mono text-4xl text-sky-400 tracking-wider">
       {time.toLocaleTimeString()}
     </div>
   );

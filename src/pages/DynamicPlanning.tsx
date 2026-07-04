@@ -237,9 +237,9 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-16 text-white font-sans pb-24">
+    <div className="min-h-screen bg-[#0b0f19] pt-16 text-slate-100 font-sans pb-24">
       {notifications.length > 0 && (
-        <div className="fixed top-4 right-4 bg-green-500 text-black px-6 py-4 rounded-xl font-bold shadow-[0_0_20px_rgba(34,197,94,0.5)] z-50 flex items-center gap-2 transition duration-300">
+        <div className="fixed top-4 right-4 bg-sky-500 text-white px-6 py-4 rounded-xl font-bold shadow-[0_0_20px_rgba(14,165,233,0.3)] z-50 flex items-center gap-2 transition duration-300">
           <Sparkles className="w-5 h-5 animate-pulse" />
           <span>{notifications[notifications.length - 1]}</span>
           <button onClick={() => setNotifications([])} className="ml-4 hover:scale-110">
@@ -249,10 +249,10 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
       )}
 
       <div className="container mx-auto flex items-center gap-4 mb-8 px-4">
-        <button onClick={onBack} className="p-3 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-xl transition duration-300 hover:scale-105">
+        <button onClick={onBack} className="p-3 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 rounded-xl transition duration-300 hover:scale-105">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6 text-green-400"
+            className="w-6 h-6 text-sky-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -261,10 +261,10 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
           </svg>
         </button>
         <div>
-          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">
             Dynamic Planner
           </h1>
-          <p className="text-gray-400 text-sm">Organize your expenses, tasks, and get AI itinerary recommendations</p>
+          <p className="text-slate-400 text-sm">Organize your expenses, tasks, and get AI itinerary recommendations</p>
         </div>
       </div>
 
@@ -272,34 +272,34 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
         {/* Main Grid for Budget & Tasks */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           {/* Budget Card */}
-          <div className="neon-card bg-black/60 border border-green-500/20 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.7)] hover:border-green-500/40 transition duration-300">
+          <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.4)] transition duration-300">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-green-400 flex items-center gap-2">
-                <DollarSign className="w-6 h-6 text-green-400" />
+              <h2 className="text-2xl font-bold text-sky-400 flex items-center gap-2">
+                <DollarSign className="w-6 h-6 text-sky-400" />
                 Budget Summary
               </h2>
               <button
-                className="p-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 rounded-lg transition duration-300"
+                className="p-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 rounded-lg transition duration-300"
                 onClick={() => {
                   const newBudget = Number(prompt('Enter new budget:', budget.toString()));
                   if (!isNaN(newBudget) && newBudget >= 0) setBudget(newBudget);
                 }}
               >
-                <Plus className="w-5 h-5 text-green-400" />
+                <Plus className="w-5 h-5 text-sky-400" />
               </button>
             </div>
             <div className="space-y-4">
-              <div className="flex justify-between border-b border-green-500/10 pb-2">
-                <span className="text-gray-400">Total Budget:</span>
+              <div className="flex justify-between border-b border-slate-800 pb-2">
+                <span className="text-slate-400">Total Budget:</span>
                 <span className="font-semibold text-white">${budget.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between border-b border-green-500/10 pb-2">
-                <span className="text-gray-400">Total Expenses:</span>
+              <div className="flex justify-between border-b border-slate-800 pb-2">
+                <span className="text-slate-400">Total Expenses:</span>
                 <span className="font-semibold text-red-400">${totalExpenses.toFixed(2)}</span>
               </div>
               <div className="flex justify-between pt-2">
-                <span className="text-gray-400">Remaining:</span>
-                <span className={`font-bold text-lg ${budget - totalExpenses >= 0 ? 'text-green-400' : 'text-red-500'}`}>
+                <span className="text-slate-400">Remaining:</span>
+                <span className={`font-bold text-lg ${budget - totalExpenses >= 0 ? 'text-sky-400' : 'text-red-500'}`}>
                   ${(budget - totalExpenses).toFixed(2)}
                 </span>
               </div>
@@ -307,18 +307,18 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
           </div>
 
           {/* Expense List Card */}
-          <div className="neon-card bg-black/60 border border-green-500/20 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.7)] hover:border-green-500/40 transition duration-300">
-            <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+          <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.4)] transition duration-300">
+            <h3 className="text-xl font-bold text-sky-400 mb-4 flex items-center gap-2">
               <Compass className="w-6 h-6" />
               Expenses
             </h3>
             <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 mb-4">
               {expenses.length === 0 ? (
-                <p className="text-gray-500 text-sm italic">No expenses added yet.</p>
+                <p className="text-slate-500 text-sm italic">No expenses added yet.</p>
               ) : (
                 expenses.map((expense) => (
-                  <div key={expense.id} className="flex justify-between items-center bg-green-500/5 border border-green-500/10 rounded-lg p-2 text-sm">
-                    <span className="text-gray-300 truncate max-w-[150px]">{expense.description}</span>
+                  <div key={expense.id} className="flex justify-between items-center bg-slate-900/50 border border-slate-800 rounded-lg p-2 text-sm">
+                    <span className="text-slate-300 truncate max-w-[150px]">{expense.description}</span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-white">${expense.amount.toFixed(2)}</span>
                       <button
@@ -333,7 +333,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
               )}
             </div>
             <button
-              className="w-full py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg font-bold border border-green-500/30 transition duration-300"
+              className="w-full py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg font-bold border border-sky-500/30 transition duration-300"
               onClick={() => {
                 const description = prompt('Enter expense description:');
                 const amount = Number(prompt('Enter expense amount:'));
@@ -347,14 +347,14 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
           </div>
 
           {/* Task Card */}
-          <div className="neon-card bg-black/60 border border-green-500/20 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.7)] hover:border-green-500/40 transition duration-300">
-            <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+          <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.4)] transition duration-300">
+            <h3 className="text-xl font-bold text-sky-400 mb-4 flex items-center gap-2">
               <CalendarRange className="w-6 h-6" />
               Schedule & Tasks
             </h3>
             <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 mb-4">
               {tasks.length === 0 ? (
-                <p className="text-gray-500 text-sm italic">No tasks or activities scheduled.</p>
+                <p className="text-slate-500 text-sm italic">No tasks or activities scheduled.</p>
               ) : (
                 tasks.map((task) => (
                   <div
@@ -362,12 +362,12 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                     className={`flex justify-between items-center p-2 rounded-lg border text-xs transition duration-300 ${
                       task.completed
                         ? 'bg-zinc-900 border-zinc-800 text-zinc-500 line-through'
-                        : 'bg-green-950/20 border-green-500/20 text-white'
+                        : 'bg-sky-950/20 border-sky-500/20 text-white'
                     }`}
                   >
                     <div className="truncate max-w-[170px]">
                       <p className="font-semibold truncate">{task.description}</p>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[10px] text-slate-400">
                         {task.month} {task.year} - {task.time}
                       </p>
                     </div>
@@ -375,7 +375,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                       <button
                         onClick={() => toggleTaskCompletion(task.id)}
                         className={`p-1 rounded ${
-                          task.completed ? 'text-zinc-600 hover:text-green-400' : 'text-green-400 hover:text-green-300'
+                          task.completed ? 'text-zinc-600 hover:text-sky-400' : 'text-sky-400 hover:text-sky-300'
                         }`}
                       >
                         <Check className="w-4 h-4" />
@@ -392,7 +392,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
               )}
             </div>
             <button
-              className="w-full py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-lg font-bold border border-green-500/30 transition duration-300"
+              className="w-full py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg font-bold border border-sky-500/30 transition duration-300"
               onClick={() => {
                 const description = prompt('Enter task description:');
                 const time = prompt('Enter task time (e.g. 09:00 AM):');
@@ -408,17 +408,17 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* AI Travel Recommendation Section */}
-        <div className="neon-card bg-black/60 border border-green-500/20 p-8 rounded-3xl shadow-[0_0_25px_rgba(0,0,0,0.8)] mb-12">
+        <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-8 rounded-3xl shadow-[0_0_25px_rgba(0,0,0,0.5)] mb-12 animate-fade-in">
           <div className="flex items-center gap-3 mb-6">
-            <Brain className="w-8 h-8 text-green-400 animate-pulse" />
+            <Brain className="w-8 h-8 text-sky-400 animate-pulse" />
             <div>
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                 AI Travel Planner & Recommender
-                <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold">
+                <span className="text-[10px] bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold">
                   ML-Powered
                 </span>
               </h2>
-              <p className="text-gray-400 text-sm">Powered by scikit-learn Content-Based Filtering & Cosine Similarity</p>
+              <p className="text-slate-400 text-sm">Powered by scikit-learn Content-Based Filtering & Cosine Similarity</p>
             </div>
           </div>
 
@@ -426,19 +426,19 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
             {/* Left Query input column */}
             <div className="md:col-span-8 space-y-4">
               <div>
-                <label className="block text-gray-300 text-sm font-semibold mb-2">What kind of trip are you looking for?</label>
+                <label className="block text-slate-300 text-sm font-semibold mb-2">What kind of trip are you looking for?</label>
                 <input
                   type="text"
                   placeholder="e.g. Seeking ancient history, serene temples, beautiful autumn scenery, and amazing street food"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-black border border-green-500/30 hover:border-green-500/50 focus:border-green-400 rounded-xl p-3 text-white transition focus:ring-1 focus:ring-green-400 outline-none"
+                  className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white transition focus:ring-1 focus:ring-sky-500 outline-none"
                 />
               </div>
 
               {/* Tag Selector */}
               <div>
-                <label className="block text-gray-300 text-sm font-semibold mb-2">Select Your Interests & Styles</label>
+                <label className="block text-slate-300 text-sm font-semibold mb-2">Select Your Interests & Styles</label>
                 <div className="flex flex-wrap gap-2">
                   {availableTags.map((tag) => {
                     const isSelected = selectedTags.includes(tag);
@@ -448,8 +448,8 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                         onClick={() => toggleTag(tag)}
                         className={`px-3 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
                           isSelected
-                            ? 'bg-green-500 text-black border-green-400 shadow-[0_0_10px_rgba(34,197,94,0.4)] scale-105'
-                            : 'bg-black/50 border-green-500/20 text-green-400 hover:border-green-500/50 hover:bg-green-500/5'
+                            ? 'bg-sky-500 text-white border-sky-400 shadow-[0_0_10px_rgba(14,165,233,0.4)] scale-105'
+                            : 'bg-slate-900/50 border-slate-800 text-sky-400 hover:border-slate-750 hover:bg-sky-500/5'
                         }`}
                       >
                         {tag}
@@ -464,11 +464,11 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
             <div className="md:col-span-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-300 text-sm font-semibold mb-2">Budget Tier</label>
+                  <label className="block text-slate-300 text-sm font-semibold mb-2">Budget Tier</label>
                   <select
                     value={budgetTier}
                     onChange={(e) => setBudgetTier(e.target.value)}
-                    className="w-full bg-black border border-green-500/30 rounded-xl p-3 text-white focus:border-green-400 outline-none transition"
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl p-3 text-white focus:border-sky-500 outline-none transition"
                   >
                     <option value="any">Any Budget</option>
                     <option value="budget">Budget Friendly</option>
@@ -477,14 +477,14 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-gray-300 text-sm font-semibold mb-2">Duration (Days)</label>
+                  <label className="block text-slate-300 text-sm font-semibold mb-2">Duration (Days)</label>
                   <input
                     type="number"
                     min="1"
                     max="10"
                     value={duration}
                     onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full bg-black border border-green-500/30 rounded-xl p-3 text-white focus:border-green-400 outline-none transition"
+                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl p-3 text-white focus:border-sky-500 outline-none transition"
                   />
                 </div>
               </div>
@@ -492,10 +492,10 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
               <button
                 onClick={handleAISearch}
                 disabled={searchLoading}
-                className="w-full py-3.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-black rounded-xl font-bold tracking-wider shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transition duration-300 hover:scale-[1.02] flex justify-center items-center gap-2"
+                className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white rounded-xl font-bold tracking-wider shadow-[0_0_15px_rgba(14,165,233,0.2)] hover:shadow-[0_0_25px_rgba(14,165,233,0.4)] transition duration-300 hover:scale-[1.02] flex justify-center items-center gap-2"
               >
                 {searchLoading ? (
-                  <span className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 ) : (
                   <>
                     <Sparkles className="w-5 h-5" />
@@ -516,20 +516,20 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
 
           {/* Recommendations Results list */}
           {recs.length > 0 && (
-            <div className="border-t border-green-500/10 pt-6 mt-6">
-              <h3 className="text-xl font-bold text-green-400 mb-4">Top AI Matches</h3>
+            <div className="border-t border-slate-800 pt-6 mt-6">
+              <h3 className="text-xl font-bold text-sky-400 mb-4">Top AI Matches</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {recs.map((dest) => (
                   <div
                     key={dest.id}
-                    className="bg-black/60 border border-green-500/15 hover:border-green-500/40 rounded-2xl p-5 transition duration-300 flex flex-col justify-between"
+                    className="bg-[#0b0f19]/80 border border-slate-800 hover:border-sky-500/20 rounded-2xl p-5 transition duration-300 flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="text-lg font-bold text-white leading-tight">
-                          {dest.name}, <span className="text-gray-400 text-sm font-normal">{dest.country}</span>
+                          {dest.name}, <span className="text-slate-400 text-sm font-normal">{dest.country}</span>
                         </h4>
-                        <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-bold rounded-lg tracking-wide shadow-sm border border-green-500/30">
+                        <span className="px-2 py-0.5 bg-sky-500/20 text-sky-400 text-xs font-bold rounded-lg tracking-wide shadow-sm border border-sky-500/30">
                           {dest.match_score}% Match
                         </span>
                       </div>
@@ -537,16 +537,16 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                       {/* Match Score Indicator Bar */}
                       <div className="w-full bg-zinc-900 h-1.5 rounded-full mb-4 overflow-hidden border border-zinc-800">
                         <div
-                          className="bg-gradient-to-r from-green-500 to-emerald-400 h-full rounded-full"
+                          className="bg-gradient-to-r from-sky-500 to-indigo-400 h-full rounded-full"
                           style={{ width: `${dest.match_score}%` }}
                         ></div>
                       </div>
 
-                      <p className="text-gray-400 text-xs line-clamp-3 mb-4 leading-relaxed">{dest.description}</p>
+                      <p className="text-slate-400 text-xs line-clamp-3 mb-4 leading-relaxed">{dest.description}</p>
                       
                       <div className="flex flex-wrap gap-1 mb-4">
                         {dest.tags.split(' ').map((t: string) => (
-                          <span key={t} className="text-[9px] bg-zinc-800 border border-zinc-700 text-zinc-300 px-1.5 py-0.5 rounded uppercase font-semibold">
+                          <span key={t} className="text-[9px] bg-zinc-850 border border-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded uppercase font-semibold">
                             {t}
                           </span>
                         ))}
@@ -554,14 +554,14 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                     </div>
 
                     <div className="space-y-2 mt-2">
-                      <div className="flex justify-between text-xs text-gray-500">
+                      <div className="flex justify-between text-xs text-slate-500">
                         <span>Budget: <strong className="text-zinc-300 capitalize">{dest.budget_tier}</strong></span>
                         <span>Location: <strong className="text-zinc-300">{dest.latitude.toFixed(2)}, {dest.longitude.toFixed(2)}</strong></span>
                       </div>
                       <button
                         onClick={() => handleGenerateItinerary(dest.name)}
                         disabled={itineraryLoading}
-                        className="w-full py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 font-bold rounded-lg border border-green-500/20 hover:border-green-500/40 text-xs transition duration-200"
+                        className="w-full py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg border border-sky-500/20 hover:border-sky-500/40 text-xs transition duration-200"
                       >
                         Generate Itinerary
                       </button>
@@ -574,26 +574,26 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
 
           {/* Active Generated Itinerary Timeline */}
           {itineraryLoading && (
-            <div className="flex flex-col items-center justify-center py-12 border-t border-green-500/10 mt-6">
-              <span className="w-10 h-10 border-4 border-green-400 border-t-transparent rounded-full animate-spin mb-4"></span>
-              <p className="text-gray-400 text-sm">Processing activity coordinates and tags via ML Optimizer...</p>
+            <div className="flex flex-col items-center justify-center py-12 border-t border-slate-800 mt-6">
+              <span className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-4"></span>
+              <p className="text-slate-400 text-sm">Processing activity coordinates and tags via ML Optimizer...</p>
             </div>
           )}
 
           {activeItinerary && (
-            <div className="border-t border-green-500/20 pt-8 mt-8 bg-green-950/5 p-6 rounded-2xl border border-green-500/10 shadow-inner">
+            <div className="border-t border-slate-800 pt-8 mt-8 bg-slate-900/10 p-6 rounded-2xl border border-slate-800 shadow-inner">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                  <h3 className="text-2xl font-bold text-green-400">
+                  <h3 className="text-2xl font-bold text-sky-400">
                     AI Itinerary: {activeItinerary.destination}
                   </h3>
-                  <p className="text-gray-400 text-xs">
+                  <p className="text-slate-400 text-xs">
                     Geographically grouped activities for {activeItinerary.days} Days • Estimated Budget: ${activeItinerary.estimated_cost_usd}
                   </p>
                 </div>
                 <button
                   onClick={handleImportItinerary}
-                  className="px-5 py-2.5 bg-green-500 text-black hover:bg-green-400 font-bold rounded-xl text-sm transition duration-200 hover:scale-[1.02] flex items-center gap-2 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                  className="px-5 py-2.5 bg-sky-500 text-white hover:bg-sky-400 font-bold rounded-xl text-sm transition duration-200 hover:scale-[1.02] flex items-center gap-2 shadow-[0_0_15px_rgba(14,165,233,0.3)]"
                 >
                   <Import className="w-4 h-4" />
                   Import to Tasks & Budget
@@ -603,10 +603,10 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
               {/* Day Timeline */}
               <div className="space-y-6">
                 {activeItinerary.itinerary.map((day: any) => (
-                  <div key={day.day} className="relative pl-6 border-l-2 border-green-500/30 space-y-4">
+                  <div key={day.day} className="relative pl-6 border-l-2 border-sky-500/20 space-y-4">
                     {/* Day circle marker */}
-                    <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-black border-2 border-green-500 flex items-center justify-center shadow-[0_0_8px_rgba(34,197,94,0.8)]">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-400"></div>
+                    <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-[#0b0f19] border-2 border-sky-500 flex items-center justify-center shadow-[0_0_8px_rgba(14,165,233,0.5)]">
+                      <div className="w-1.5 h-1.5 rounded-full bg-sky-400"></div>
                     </div>
                     
                     <h4 className="text-md font-bold text-white flex items-center gap-2">
@@ -618,19 +618,19 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                       {day.schedule.map((item: any, sIdx: number) => (
                         <div
                           key={sIdx}
-                          className="bg-black border border-green-500/10 rounded-xl p-4 shadow-sm hover:border-green-500/30 transition"
+                          className="bg-[#0b0f19]/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-sky-500/20 transition"
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <span className="text-[10px] text-green-400 font-mono font-bold bg-green-500/10 px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] text-sky-400 font-mono font-bold bg-sky-500/10 px-1.5 py-0.5 rounded">
                               {item.time}
                             </span>
-                            <span className="text-[9px] bg-zinc-800 border border-zinc-700 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-semibold">
+                            <span className="text-[9px] bg-zinc-850 border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-semibold">
                               {item.type}
                             </span>
                           </div>
                           <p className="text-sm font-semibold text-white leading-tight mb-3">{item.activity}</p>
-                          <div className="flex justify-between items-center text-[11px] text-gray-500 border-t border-zinc-900 pt-2">
-                            <span>Cost: {item.cost === 0 ? <strong className="text-green-400 font-bold uppercase">Free</strong> : <strong className="text-zinc-300 font-semibold">${item.cost}</strong>}</span>
+                          <div className="flex justify-between items-center text-[11px] text-slate-500 border-t border-slate-900/50 pt-2">
+                            <span>Cost: {item.cost === 0 ? <strong className="text-sky-400 font-bold uppercase">Free</strong> : <strong className="text-slate-300 font-semibold">${item.cost}</strong>}</span>
                             <span>Duration: {item.duration}</span>
                           </div>
                         </div>

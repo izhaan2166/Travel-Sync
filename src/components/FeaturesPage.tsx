@@ -9,9 +9,9 @@ interface Props {
 
 export function FeaturesPage({ onFeatureClick, onBack }: Props) {
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-[#0b0f19] flex flex-col items-center justify-center p-8">
       <div className="max-w-4xl w-full space-y-12">
-        <h1 className="text-4xl font-bold text-center text-green-400">Features</h1>
+        <h1 className="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Features</h1>
         <FeatureGrid onFeatureClick={onFeatureClick} />
         <div className="flex justify-center">
           <button

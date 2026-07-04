@@ -143,7 +143,7 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
       ],
     };
 
-    // Add new route to the map
+    // Add new route to the map (using premium sky blue color `#0ea5e9`)
     mapInstance.current?.addLayer({
       id: 'route',
       type: 'line',
@@ -152,7 +152,7 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
         data: geoJson,
       },
       paint: {
-        'line-color': '#00ff00',
+        'line-color': '#0ea5e9',
         'line-width': 5,
       },
     });
@@ -166,26 +166,26 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-16">
-      <Navigation onBack={onBack} title="Interactive Maps" />
+    <div className="min-h-screen bg-[#0b0f19] pt-16 text-slate-100">
+      <Navigation onBack={onBack} title="Interactive Journey Map" />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div
-            className="md:col-span-3 neon-card bg-black/50 p-6 rounded-xl"
+            className="md:col-span-3 neon-card bg-[#0f172a]/60 border border-slate-800 p-4 rounded-2xl shadow-xl"
             style={{ minHeight: '500px' }}
           >
             <div
               ref={mapElement}
-              className="w-full h-full border border-green-500/30 rounded-lg"
+              className="w-full h-full border border-slate-800 rounded-xl overflow-hidden"
             />
           </div>
 
           <div className="space-y-6">
             {/* Step 1: Search Bar for Starting Location */}
-            <div className="neon-card bg-black/50 p-6 rounded-xl">
-              <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
-                <Search className="w-6 h-6 text-green-400" />
-                Search for Starting Location
+            <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl">
+              <h3 className="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
+                <Search className="w-5 h-5 text-sky-400" />
+                Starting Location
               </h3>
               <input
                 ref={searchRef}
@@ -194,14 +194,14 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyUp={handleSearch}
                 placeholder="Enter starting location..."
-                className="w-full p-3 mb-3 border border-green-500/30 rounded-lg bg-black text-gray-300 focus:ring"
+                className="w-full p-3 border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl bg-[#070b13] text-slate-200 outline-none transition"
               />
-              <ul className={`mt-4 space-y-2 ${isSuggestionsVisible ? '' : 'hidden'}`}>
+              <ul className={`mt-3 space-y-1.5 max-h-[150px] overflow-y-auto ${isSuggestionsVisible ? '' : 'hidden'}`}>
                 {searchResults.map((result, index) => (
                   <li
                     key={index}
                     onClick={() => handleSearchSelect(result)}
-                    className="p-2 border border-green-500/30 rounded-lg hover:bg-green-500/10 cursor-pointer text-gray-300"
+                    className="p-2 text-xs border border-slate-850 rounded-lg bg-[#070b13] hover:border-sky-500/30 hover:bg-sky-500/5 cursor-pointer text-slate-300 transition"
                   >
                     {result.poi?.name || result.address.freeformAddress}
                   </li>
@@ -210,10 +210,10 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Step 2: Search Bar for Destination Location */}
-            <div className="neon-card bg-black/50 p-6 rounded-xl">
-              <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
-                <Bookmark className="w-6 h-6 text-green-400" />
-                Search for Destination
+            <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl">
+              <h3 className="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
+                <Bookmark className="w-5 h-5 text-sky-400" />
+                Destination
               </h3>
               <input
                 ref={destinationRef}
@@ -222,16 +222,16 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
                 onChange={(e) => setDestinationQuery(e.target.value)}
                 onKeyUp={handleDestinationSearch}
                 placeholder="Enter destination location..."
-                className="w-full p-3 mb-3 border border-green-500/30 rounded-lg bg-black text-gray-300 focus:ring"
+                className="w-full p-3 border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl bg-[#070b13] text-slate-200 outline-none transition"
               />
               <ul
-                className={`mt-4 space-y-2 ${isDestinationSuggestionsVisible ? '' : 'hidden'}`}
+                className={`mt-3 space-y-1.5 max-h-[150px] overflow-y-auto ${isDestinationSuggestionsVisible ? '' : 'hidden'}`}
               >
                 {searchResults.map((result, index) => (
                   <li
                     key={index}
                     onClick={() => handleDestinationSelect(result)}
-                    className="p-2 border border-green-500/30 rounded-lg hover:bg-green-500/10 cursor-pointer text-gray-300"
+                    className="p-2 text-xs border border-slate-850 rounded-lg bg-[#070b13] hover:border-sky-500/30 hover:bg-sky-500/5 cursor-pointer text-slate-300 transition"
                   >
                     {result.poi?.name || result.address.freeformAddress}
                   </li>
@@ -241,10 +241,10 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
 
             {/* Step 3: Start Navigation Button */}
             {isRouteReady && (
-              <div className="neon-card bg-black/50 p-6 rounded-xl">
+              <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-4 rounded-2xl">
                 <button
                   onClick={calculateRoute}
-                  className="w-full p-3 bg-green-500 text-white rounded-lg"
+                  className="w-full p-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition duration-200 hover:scale-[1.02]"
                 >
                   Start Navigation
                 </button>
@@ -252,24 +252,25 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
             )}
 
             {/* Weather Info */}
-            <div className="neon-card bg-black/50 p-6 rounded-xl">
-              <h3 className="text-xl font-bold text-green-400 mb-4">
-                <Sun className="w-6 h-6 text-green-400" />
-                Weather Info
+            <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl">
+              <h3 className="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
+                <Sun className="w-5 h-5 text-sky-400" />
+                Weather Conditions
               </h3>
               {weather ? (
-                <div>
-                  <p className="text-gray-300">Temperature: {weather.temp}°C</p>
-                  <p className="text-gray-300">Description: {weather.description}</p>
+                <div className="bg-[#070b13]/50 p-3 border border-slate-850 rounded-xl text-xs space-y-1">
+                  <p className="text-slate-400 font-semibold uppercase tracking-wider">Starting Location</p>
+                  <p className="text-slate-200 text-sm font-bold mt-1">{weather.temp}°C</p>
+                  <p className="text-slate-400 capitalize">{weather.description}</p>
                 </div>
               ) : (
-                <p className="text-gray-300">Loading weather...</p>
+                <p className="text-xs text-slate-500 italic">Loading weather...</p>
               )}
               {destinationWeather && (
-                <div className="mt-4">
-                  <h4 className="text-lg font-bold text-gray-300">Destination Weather</h4>
-                  <p className="text-gray-300">Temperature: {destinationWeather.temp}°C</p>
-                  <p className="text-gray-300">Description: {destinationWeather.description}</p>
+                <div className="mt-4 bg-[#070b13]/50 p-3 border border-slate-850 rounded-xl text-xs space-y-1">
+                  <p className="text-slate-400 font-semibold uppercase tracking-wider">Destination</p>
+                  <p className="text-slate-200 text-sm font-bold mt-1">{destinationWeather.temp}°C</p>
+                  <p className="text-slate-400 capitalize">{destinationWeather.description}</p>
                 </div>
               )}
             </div>
