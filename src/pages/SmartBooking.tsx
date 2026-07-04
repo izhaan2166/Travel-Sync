@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { Navigation } from '../components/Navigation';
-import { Plane, Search, ExternalLink, Calendar, Info, Compass, MapPin } from 'lucide-react';
+import { Plane, Search, ExternalLink, Calendar, Info, Compass, MapPin, ArrowRightLeft, ArrowRight, DollarSign, Filter } from 'lucide-react';
 import config from '../../config';
 import { AIRPORTS } from '../data/airports';
 
@@ -9,9 +11,16 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
   const [formData, setFormData] = useState({
     from: '',
     to: '',
-    departureDate: '',
-    returnDate: '',
   });
+
+  // Toggles & configs
+  const [tripType, setTripType] = useState<'round-trip' | 'one-way'>('round-trip');
+  const [currency, setCurrency] = useState('USD');
+  const [sortBy, setSortBy] = useState('best'); // 'best' | 'price_low' | 'duration_short'
+
+  // Date Range (Departure / Return in the same place)
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+  const [startDate, endDate] = dateRange;
   
   const [fromSuggestions, setFromSuggestions] = useState<any[]>([]);
   const [toSuggestions, setToSuggestions] = useState<any[]>([]);
@@ -89,26 +98,45 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
     setShowToDropdown(false);
   };
 
+  const formatDate = (date: Date | null) => {
+    if (!date) return '';
+    const d = new Date(date);
+    const month = '' + (d.getMonth() + 1);
+    const day = '' + d.getDate();
+    const year = d.getFullYear();
+    return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
+  };
+
   const openGoogleFlights = () => {
-    if (!formData.from || !formData.to || !formData.departureDate) {
-      setError("Please fill out 'From' (origin), 'To' (destination), and 'Departure Date' to search on Google Flights.");
+    if (!formData.from || !formData.to || !startDate) {
+      setError("Please fill out 'Where from?', 'Where to?', and departure date to search on Google Flights.");
       return;
     }
     
+    const depDateStr = formatDate(startDate);
+    const retDateStr = formatDate(endDate);
+    
     // Construct Google Flights search query URL
-    let query = `Flights from ${formData.from} to ${formData.to} on ${formData.departureDate}`;
-    if (formData.returnDate) {
-      query += ` roundtrip return ${formData.returnDate}`;
+    let query = `Flights from ${formData.from} to ${formData.to} on ${depDateStr}`;
+    if (tripType === 'round-trip' && endDate) {
+      query += ` roundtrip return ${retDateStr}`;
+    } else {
+      query += ` oneway`;
     }
     const url = `https://www.google.com/travel/flights?q=${encodeURIComponent(query)}`;
     window.open(url, '_blank');
   };
 
   const fetchFlights = async () => {
-    if (!formData.from || !formData.to || !formData.departureDate) {
-      setError("Please fill out 'From', 'To', and 'Departure Date' to run sandbox search.");
+    if (!formData.from || !formData.to || !startDate) {
+      setError("Please fill out 'Where from?', 'Where to?', and departure date to run sandbox search.");
       return;
     }
+    if (tripType === 'round-trip' && !endDate) {
+      setError("Please select a return date for your round-trip flight.");
+      return;
+    }
+
     setLoading(true);
     setError('');
     setFlightData(null);
@@ -131,18 +159,18 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
 
       const token = authResponse.data.access_token;
 
-      // Step 2: Fetch flight offers in default USD currency
+      // Step 2: Fetch flight offers in selected currency
       const flightsResponse = await axios.get(
         'https://test.api.amadeus.com/v2/shopping/flight-offers',
         {
           headers: { Authorization: `Bearer ${token}` },
           params: {
-            originLocationCode: formData.from,
-            destinationLocationCode: formData.to,
-            departureDate: formData.departureDate,
-            returnDate: formData.returnDate || undefined, // Optional
+            originLocationCode: formData.from.toUpperCase(),
+            destinationLocationCode: formData.to.toUpperCase(),
+            departureDate: formatDate(startDate),
+            returnDate: tripType === 'round-trip' ? formatDate(endDate) : undefined,
             adults: 1,
-            currencyCode: 'USD',
+            currencyCode: currency,
           },
         }
       );
@@ -150,14 +178,47 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
       if (flightsResponse.data.data && flightsResponse.data.data.length > 0) {
         setFlightData(flightsResponse.data.data);
       } else {
-        setError('No test flight offers found for this routing. (Note: Amadeus sandbox only lists specific mock flight routes).');
+        setError('No test flight offers found in sandbox for this routing.');
       }
     } catch (err: any) {
       console.error('Error fetching flights:', err);
-      setError('Sandbox flight lookup failed. This is common when using restricted sandbox API keys for real flights.');
+      setError('Sandbox flight lookup failed. This is common when using sandbox API keys for real routing.');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Parse ISO 8601 duration (like "PT2H30M") to total minutes for sorting
+  const parseDuration = (durationStr: string): number => {
+    const matches = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!matches) return 0;
+    const hours = parseInt(matches[1] || '0', 10);
+    const minutes = parseInt(matches[2] || '0', 10);
+    return hours * 60 + minutes;
+  };
+
+  const getSortedFlights = () => {
+    if (!flightData) return [];
+    const flights = [...flightData];
+    if (sortBy === 'price_low') {
+      return flights.sort((a, b) => parseFloat(a.price.total) - parseFloat(b.price.total));
+    }
+    if (sortBy === 'duration_short') {
+      return flights.sort((a, b) => {
+        const durA = parseDuration(a.itineraries[0].duration);
+        const durB = parseDuration(b.itineraries[0].duration);
+        return durA - durB;
+      });
+    }
+    return flights; // default 'best' (as returned from API)
+  };
+
+  const formatItineraryDuration = (durationStr: string) => {
+    const matches = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    if (!matches) return durationStr;
+    const hours = matches[1] ? `${matches[1]}h` : '';
+    const minutes = matches[2] ? `${matches[2]}m` : '';
+    return `${hours} ${minutes}`.trim();
   };
 
   // Map of IATA codes to airport names and help/service numbers
@@ -198,18 +259,47 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-6xl mx-auto">
           {/* Flight Search Panel */}
           <div className="lg:col-span-5 neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-xl">
-            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 mb-6 flex items-center gap-2">
-              <Compass className="w-6 h-6 text-sky-400" />
-              Find Your Flight
-            </h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 flex items-center gap-2">
+                <Compass className="w-6 h-6 text-sky-400" />
+                Find Your Flight
+              </h2>
+
+              {/* Trip Type Toggles */}
+              <div className="flex bg-[#070b13] border border-slate-800 p-1 rounded-xl text-xs font-semibold">
+                <button
+                  onClick={() => {
+                    setTripType('round-trip');
+                    setDateRange([null, null]);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition ${
+                    tripType === 'round-trip' ? 'bg-sky-500 text-black shadow-md' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Round-trip
+                </button>
+                <button
+                  onClick={() => {
+                    setTripType('one-way');
+                    setDateRange([null, null]);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition ${
+                    tripType === 'one-way' ? 'bg-sky-500 text-black shadow-md' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  One-way
+                </button>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                {/* From Field */}
+                {/* Where from? Field */}
                 <div className="relative">
-                  <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">From</label>
+                  <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Where from?</label>
                   <input
                     type="text"
-                    placeholder="Origin (e.g. JED)"
+                    placeholder="Origin City / Code"
                     value={formData.from}
                     onChange={handleFromChange}
                     onFocus={() => {
@@ -217,7 +307,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                       setFromSuggestions(filterAirports(formData.from));
                     }}
                     onBlur={() => setTimeout(() => setShowFromDropdown(false), 200)}
-                    className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white uppercase outline-none transition"
+                    className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition placeholder-slate-750"
                   />
                   {showFromDropdown && fromSuggestions.length > 0 && (
                     <div className="absolute z-50 left-0 mt-1.5 w-[280px] sm:w-[350px] md:w-[450px] bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-2xl max-h-80 overflow-y-auto shadow-2xl p-2 space-y-1">
@@ -237,7 +327,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 font-mono">
+                            <span className="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 font-mono uppercase">
                               {a.code}
                             </span>
                             <p className="text-[10px] text-slate-500 mt-1 uppercase font-semibold tracking-wider">{a.country}</p>
@@ -248,12 +338,12 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                   )}
                 </div>
 
-                {/* To Field */}
+                {/* Where to? Field */}
                 <div className="relative">
-                  <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">To</label>
+                  <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Where to?</label>
                   <input
                     type="text"
-                    placeholder="Destination (e.g. LHR)"
+                    placeholder="Destination City / Code"
                     value={formData.to}
                     onChange={handleToChange}
                     onFocus={() => {
@@ -261,7 +351,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                       setToSuggestions(filterAirports(formData.to));
                     }}
                     onBlur={() => setTimeout(() => setShowToDropdown(false), 200)}
-                    className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white uppercase outline-none transition"
+                    className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition placeholder-slate-750"
                   />
                   {showToDropdown && toSuggestions.length > 0 && (
                     <div className="absolute z-50 right-0 mt-1.5 w-[280px] sm:w-[350px] md:w-[450px] bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-2xl max-h-80 overflow-y-auto shadow-2xl p-2 space-y-1">
@@ -281,7 +371,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 font-mono">
+                            <span className="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 font-mono uppercase">
                               {a.code}
                             </span>
                             <p className="text-[10px] text-slate-500 mt-1 uppercase font-semibold tracking-wider">{a.country}</p>
@@ -293,33 +383,58 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Departure Date</label>
-                <input
-                  type="date"
-                  name="departureDate"
-                  value={formData.departureDate}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, departureDate: e.target.value }))}
-                  className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition"
-                />
+              {/* Integrated Calendar (Selects Departure/Return in same popover) */}
+              <div className="relative">
+                <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">
+                  {tripType === 'round-trip' ? 'Dates (Departure - Return)' : 'Date (Departure)'}
+                </label>
+                <div className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus-within:border-sky-500 rounded-xl p-3 flex items-center gap-2.5 transition">
+                  <Calendar className="w-5 h-5 text-sky-400 shrink-0" />
+                  <DatePicker
+                    selectsRange={tripType === 'round-trip'}
+                    startDate={startDate}
+                    endDate={endDate}
+                    selected={tripType === 'one-way' ? startDate : undefined}
+                    onChange={(update: any) => {
+                      if (tripType === 'round-trip') {
+                        setDateRange(update);
+                      } else {
+                        setDateRange([update, null]);
+                      }
+                    }}
+                    placeholderText={tripType === 'round-trip' ? "Choose departure - return dates" : "Choose departure date"}
+                    className="bg-transparent text-white w-full outline-none text-sm placeholder-slate-650 cursor-pointer"
+                    dateFormat="yyyy-MM-dd"
+                    minDate={new Date()}
+                    isClearable={true}
+                  />
+                </div>
               </div>
 
+              {/* Sandbox Currency Configuration */}
               <div>
-                <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">Return Date (Optional)</label>
-                <input
-                  type="date"
-                  name="returnDate"
-                  value={formData.returnDate}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, returnDate: e.target.value }))}
-                  className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition"
-                />
+                <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                  <DollarSign className="w-3.5 h-3.5 text-sky-400" />
+                  Sandbox Pricing Currency
+                </label>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition text-sm"
+                >
+                  <option value="USD">US Dollar (USD)</option>
+                  <option value="EUR">Euro (EUR)</option>
+                  <option value="GBP">British Pound (GBP)</option>
+                  <option value="JPY">Japanese Yen (JPY)</option>
+                  <option value="INR">Indian Rupee (INR)</option>
+                </select>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 space-y-3">
+              <div className="pt-2 space-y-3">
                 <button
                   onClick={openGoogleFlights}
-                  className="w-full py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(14,165,233,0.2)] hover:shadow-[0_0_20px_rgba(14,165,233,0.4)] transition duration-300 hover:scale-[1.02] flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-[0_0_15px_rgba(14,165,233,0.25)] hover:shadow-[0_0_20px_rgba(14,165,233,0.45)] transition duration-300 hover:scale-[1.02] flex items-center justify-center gap-2"
                 >
                   <Search className="w-5 h-5" />
                   Search on Google Flights
@@ -334,7 +449,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
 
                 <button
                   onClick={fetchFlights}
-                  className="w-full py-2.5 bg-slate-850 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-300 rounded-xl text-xs font-semibold tracking-wide transition duration-200"
+                  className="w-full py-2.5 bg-slate-850 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 text-slate-350 rounded-xl text-xs font-semibold tracking-wide transition duration-200"
                   disabled={loading}
                 >
                   {loading ? 'Searching local Sandbox...' : 'Run Amadeus Sandbox Lookup'}
@@ -370,17 +485,38 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
               </div>
             )}
 
-            {/* Sandbox Flights Results */}
+            {/* Sandbox Flights Results & Sorting */}
             {flightData && (
-              <div className="neon-card bg-[#0f172a]/60 border border-slate-850 p-6 rounded-2xl shadow-xl">
-                <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 mb-4 flex items-center gap-2">
-                  <Plane className="w-5 h-5 text-sky-400" />
-                  Sandbox Test Offers
-                </h3>
+              <div className="neon-card bg-[#0f172a]/60 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-4">
+                  <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 flex items-center gap-2">
+                    <Plane className="w-5 h-5 text-sky-400" />
+                    Sandbox Test Offers
+                  </h3>
+
+                  {/* Google-like Sorting Panel */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-slate-500 flex items-center gap-1 font-semibold uppercase tracking-wider">
+                      <Filter className="w-3.5 h-3.5 text-slate-500" />
+                      Sort by:
+                    </span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="bg-[#070b13] border border-slate-800 rounded-lg p-1.5 text-slate-300 font-semibold outline-none transition focus:border-sky-500"
+                    >
+                      <option value="best">Best Flights</option>
+                      <option value="price_low">Price (low to high)</option>
+                      <option value="duration_short">Duration (shortest first)</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
-                  {flightData.map((flight: any, index: number) => {
+                  {getSortedFlights().map((flight: any, index: number) => {
                     const departure = flight.itineraries[0].segments[0].departure;
                     const arrival = flight.itineraries[0].segments[0].arrival;
+                    const durationStr = flight.itineraries[0].duration;
 
                     const departureDetails = getAirportDetails(departure.iataCode);
                     const arrivalDetails = getAirportDetails(arrival.iataCode);
@@ -388,13 +524,18 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                     return (
                       <div key={index} className="p-4 bg-[#070b13]/80 border border-slate-800 hover:border-sky-500/20 rounded-xl transition duration-200">
                         <div className="flex justify-between items-start mb-3">
-                          <h4 className="text-md font-bold text-sky-400">{fetchAirlineName(flight.validatingAirlineCodes[0])}</h4>
-                          <span className="text-xs font-bold text-indigo-400 font-mono">
-                            USD {flight.price.total}
+                          <div>
+                            <h4 className="text-md font-bold text-sky-400">{fetchAirlineName(flight.validatingAirlineCodes[0])}</h4>
+                            <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mt-0.5">
+                              Duration: {formatItineraryDuration(durationStr)}
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-indigo-400 font-mono bg-indigo-500/5 px-2.5 py-1 border border-indigo-500/20 rounded-lg">
+                            {currency} {flight.price.total}
                           </span>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div className="grid grid-cols-2 gap-4 text-xs mt-2">
                           <div>
                             <p className="text-slate-500 font-bold uppercase tracking-wider">Departure</p>
                             <p className="text-slate-200 mt-1 font-semibold">{departure.iataCode} ({departureDetails.name})</p>
@@ -407,7 +548,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                           </div>
                         </div>
 
-                        <div className="flex justify-between items-center text-[10px] text-slate-500 mt-3 pt-3 border-t border-slate-900">
+                        <div className="flex justify-between items-center text-[10px] text-slate-550 mt-3 pt-3 border-t border-slate-900">
                           <span>Flight No: {flight.itineraries[0].segments[0].carrierCode}-{flight.itineraries[0].segments[0].number}</span>
                           <span>Airport Support: {departureDetails.serviceNumber}</span>
                         </div>
