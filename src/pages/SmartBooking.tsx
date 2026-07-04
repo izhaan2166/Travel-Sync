@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Navigation } from '../components/Navigation';
-import { Plane, Search, ExternalLink, Calendar, HelpCircle, Info, Compass } from 'lucide-react';
+import { Plane, Search, ExternalLink, Calendar, Info, Compass, MapPin } from 'lucide-react';
 import config from '../../config';
 import { AIRPORTS } from '../data/airports';
 
@@ -22,16 +22,47 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
   const [flightData, setFlightData] = useState<any>(null);
   const [error, setError] = useState('');
 
+  // Weighted relevance search scoring algorithm
   const filterAirports = (val: string) => {
     if (!val) return [];
-    const searchVal = val.toLowerCase();
-    return AIRPORTS.filter(
-      (a) =>
-        a.code.toLowerCase().includes(searchVal) ||
-        a.name.toLowerCase().includes(searchVal) ||
-        a.city.toLowerCase().includes(searchVal) ||
-        a.country.toLowerCase().includes(searchVal)
-    ).slice(0, 5); // Return top 5 suggestions
+    const searchVal = val.toLowerCase().trim();
+    
+    const scored = AIRPORTS.map((a) => {
+      let score = 0;
+      const codeLower = a.code.toLowerCase();
+      const cityLower = a.city.toLowerCase();
+      const nameLower = a.name.toLowerCase();
+      const countryLower = a.country.toLowerCase();
+      
+      if (codeLower === searchVal) {
+        score += 100; // Exact IATA code match
+      } else if (codeLower.startsWith(searchVal)) {
+        score += 85;  // IATA code prefix match
+      } else if (cityLower.startsWith(searchVal)) {
+        score += 80;  // City name prefix match
+      } else if (nameLower.startsWith(searchVal)) {
+        score += 70;  // Airport name prefix match
+      } else if (cityLower.includes(searchVal)) {
+        score += 50;  // City substring match
+      } else if (nameLower.includes(searchVal)) {
+        score += 40;  // Airport name substring match
+      } else if (countryLower.includes(searchVal)) {
+        score += 20;  // Country substring match
+      }
+      
+      return { ...a, score };
+    });
+    
+    // Filter matches, sort by highest score, then by city alphabetically
+    return scored
+      .filter((item) => item.score > 0)
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        return a.city.localeCompare(b.city);
+      })
+      .slice(0, 7); // Return top 7 matching results
   };
 
   const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,18 +220,28 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                     className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white uppercase outline-none transition"
                   />
                   {showFromDropdown && fromSuggestions.length > 0 && (
-                    <div className="absolute z-50 left-0 right-0 mt-1 bg-[#0f172a] border border-slate-800 rounded-xl max-h-60 overflow-y-auto shadow-2xl">
+                    <div className="absolute z-50 left-0 mt-1.5 w-[280px] sm:w-[350px] md:w-[450px] bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-2xl max-h-80 overflow-y-auto shadow-2xl p-2 space-y-1">
                       {fromSuggestions.map((a) => (
                         <div
                           key={a.code}
                           onMouseDown={() => handleSelectFrom(a.code)}
-                          className="p-3 hover:bg-sky-500/10 hover:text-sky-400 cursor-pointer flex justify-between items-center text-left text-xs transition border-b border-slate-850 last:border-b-0"
+                          className="p-3.5 hover:bg-sky-500/10 hover:text-sky-400 cursor-pointer rounded-xl flex justify-between items-center text-left text-xs transition border border-transparent hover:border-sky-500/20"
                         >
-                          <div>
-                            <p className="font-bold text-slate-200">{a.city} ({a.code})</p>
-                            <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{a.name}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                              <MapPin className="w-4 h-4 text-sky-400" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-100 text-sm leading-tight">{a.city}</p>
+                              <p className="text-[11px] text-slate-450 mt-0.5 truncate max-w-[150px] sm:max-w-[200px] md:max-w-[260px]">{a.name}</p>
+                            </div>
                           </div>
-                          <span className="text-[10px] text-slate-500 shrink-0 ml-1">{a.country}</span>
+                          <div className="text-right shrink-0">
+                            <span className="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 font-mono">
+                              {a.code}
+                            </span>
+                            <p className="text-[10px] text-slate-500 mt-1 uppercase font-semibold tracking-wider">{a.country}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -223,18 +264,28 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                     className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white uppercase outline-none transition"
                   />
                   {showToDropdown && toSuggestions.length > 0 && (
-                    <div className="absolute z-50 left-0 right-0 mt-1 bg-[#0f172a] border border-slate-800 rounded-xl max-h-60 overflow-y-auto shadow-2xl">
+                    <div className="absolute z-50 right-0 mt-1.5 w-[280px] sm:w-[350px] md:w-[450px] bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-2xl max-h-80 overflow-y-auto shadow-2xl p-2 space-y-1">
                       {toSuggestions.map((a) => (
                         <div
                           key={a.code}
                           onMouseDown={() => handleSelectTo(a.code)}
-                          className="p-3 hover:bg-sky-500/10 hover:text-sky-400 cursor-pointer flex justify-between items-center text-left text-xs transition border-b border-slate-850 last:border-b-0"
+                          className="p-3.5 hover:bg-sky-500/10 hover:text-sky-400 cursor-pointer rounded-xl flex justify-between items-center text-left text-xs transition border border-transparent hover:border-sky-500/20"
                         >
-                          <div>
-                            <p className="font-bold text-slate-200">{a.city} ({a.code})</p>
-                            <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{a.name}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                              <MapPin className="w-4 h-4 text-sky-400" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-100 text-sm leading-tight">{a.city}</p>
+                              <p className="text-[11px] text-slate-450 mt-0.5 truncate max-w-[150px] sm:max-w-[200px] md:max-w-[260px]">{a.name}</p>
+                            </div>
                           </div>
-                          <span className="text-[10px] text-slate-500 shrink-0 ml-1">{a.country}</span>
+                          <div className="text-right shrink-0">
+                            <span className="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 font-mono">
+                              {a.code}
+                            </span>
+                            <p className="text-[10px] text-slate-500 mt-1 uppercase font-semibold tracking-wider">{a.country}</p>
+                          </div>
                         </div>
                       ))}
                     </div>
