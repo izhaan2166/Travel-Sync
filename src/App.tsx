@@ -1,52 +1,79 @@
-import React, { useState } from 'react';
-import { WelcomePage } from './components/WelcomePage';
-import { FeaturesPage } from './components/FeaturesPage';
-import { SmartBooking } from './pages/SmartBooking';
-import { InteractiveMaps } from './pages/InteractiveMaps';
-import { DynamicPlanning } from './pages/DynamicPlanning';
-import { RealTimeUpdates } from './pages/RealTimeUpdates';
-import { SecureStorage } from './pages/SecureStorage';
-import { EasySharing } from './pages/EasySharing';
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import Loading from './components/common/Loading';
+import { ToastProvider } from './components/common/Toast';
 
-function App() {
-  const [currentPage, setCurrentPage] = useState<'welcome' | 'features' | string>('welcome');
+// Lazy load page components (named exports wrapped to default objects for React.lazy)
+const WelcomePage = React.lazy(() => import('./pages/WelcomePage').then(m => ({ default: m.WelcomePage })));
+const FeaturesPage = React.lazy(() => import('./pages/FeaturesPage').then(m => ({ default: m.FeaturesPage })));
+const SmartBooking = React.lazy(() => import('./pages/SmartBooking').then(m => ({ default: m.SmartBooking })));
+const InteractiveMaps = React.lazy(() => import('./pages/InteractiveMaps').then(m => ({ default: m.InteractiveMaps })));
+const DynamicPlanning = React.lazy(() => import('./pages/DynamicPlanning').then(m => ({ default: m.DynamicPlanning })));
+const RealTimeUpdates = React.lazy(() => import('./pages/RealTimeUpdates').then(m => ({ default: m.RealTimeUpdates })));
+const SecureStorage = React.lazy(() => import('./pages/SecureStorage').then(m => ({ default: m.SecureStorage })));
+const EasySharing = React.lazy(() => import('./pages/EasySharing').then(m => ({ default: m.EasySharing })));
 
-  const handleGetStarted = () => {
-    setCurrentPage('features');
-  };
+function AppContent() {
+  const navigate = useNavigate();
 
-  const handleFeatureClick = (featureId: string) => {
-    setCurrentPage(featureId);
-  };
+  const handleGetStarted = () => navigate('/features');
+  const handleFeatureClick = (featureId: string) => navigate(`/${featureId}`);
+  const handleBack = () => navigate('/features');
+  const handleBackToWelcome = () => navigate('/');
 
-  const handleBack = () => {
-    setCurrentPage('features');
-  };
+  return (
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route 
+          path="/" 
+          element={<WelcomePage onGetStarted={handleGetStarted} onFeatureClick={handleFeatureClick} />} 
+        />
+        <Route 
+          path="/features" 
+          element={<FeaturesPage onFeatureClick={handleFeatureClick} onBack={handleBackToWelcome} />} 
+        />
+        <Route 
+          path="/smart-booking" 
+          element={<SmartBooking onBack={handleBack} />} 
+        />
+        <Route 
+          path="/interactive-maps" 
+          element={<InteractiveMaps onBack={handleBack} />} 
+        />
+        <Route 
+          path="/dynamic-planning" 
+          element={<DynamicPlanning onBack={handleBack} />} 
+        />
+        <Route 
+          path="/real-time-updates" 
+          element={<RealTimeUpdates onBack={handleBack} />} 
+        />
+        <Route 
+          path="/secure-storage" 
+          element={<SecureStorage onBack={handleBack} />} 
+        />
+        <Route 
+          path="/easy-sharing" 
+          element={<EasySharing onBack={handleBack} />} 
+        />
+        {/* Fallback route */}
+        <Route 
+          path="*" 
+          element={<WelcomePage onGetStarted={handleGetStarted} onFeatureClick={handleFeatureClick} />} 
+        />
+      </Routes>
+    </Suspense>
+  );
+}
 
-  const handleBackToWelcome = () => {
-    setCurrentPage('welcome');
-  };
-
-  switch (currentPage) {
-    case 'welcome':
-      return <WelcomePage onGetStarted={handleGetStarted} onFeatureClick={handleFeatureClick} />;
-    case 'features':
-      return <FeaturesPage onFeatureClick={handleFeatureClick} onBack={handleBackToWelcome} />;
-    case 'smart-booking':
-      return <SmartBooking onBack={handleBack} />;
-    case 'interactive-maps':
-      return <InteractiveMaps onBack={handleBack} />;
-    case 'dynamic-planning':
-      return <DynamicPlanning onBack={handleBack} />;
-    case 'real-time-updates':
-      return <RealTimeUpdates onBack={handleBack} />;
-    case 'secure-storage':
-      return <SecureStorage onBack={handleBack} />;
-    case 'easy-sharing':
-      return <EasySharing onBack={handleBack} />;
-    default:
-      return <WelcomePage onGetStarted={handleGetStarted} />;
-  }
+export function App() {
+  return (
+    <ToastProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </ToastProvider>
+  );
 }
 
 export default App;

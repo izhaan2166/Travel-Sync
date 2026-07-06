@@ -3,18 +3,20 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  --bg-primary: #07111F;
-  --bg-secondary: #0B1524;
-  --bg-tertiary: #111827;
+  color-scheme: light;
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F8FAFC;
   
-  --accent-primary: #4F9DFF;
-  --accent-secondary: #5EEAD4;
-  --accent-purple: #7C6CF7;
+  --primary-navy: #0F3D91;
+  --accent-teal: #00A896;
+  --accent-primary: #0F3D91;
   
-  --text-primary: #FFFFFF;
-  --text-secondary: #B8C2CC;
-  --text-muted: #7C8794;
+  --text-primary: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  
+  --border-color: #E2E8F0;
   
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
@@ -24,277 +26,153 @@ body {
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   line-height: 1.5;
+}
+
+/* Universal visible focus outline for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--accent-teal) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(0, 168, 150, 0.15) !important;
+}
+
+/* Button & interactive element click active states */
+button:active:not(:disabled), 
+a:active:not(:disabled),
+[role="button"]:active:not(:disabled) {
+  transform: scale(0.98) !important;
+}
+
+/* Disabled visual indicators */
+:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }
 
 /* Premium Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 5px;
-  border: 2px solid var(--bg-primary);
+  background: #CBD5E1;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94A3B8;
 }
 
-/* Base custom inputs */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.8) sepia(1) saturate(5) hue-rotate(180deg);
+/* Modern Card Layouts */
+.travel-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.01);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Datepicker Overrides */
-.react-datepicker {
-  background-color: #0d192d !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 16px !important;
-  font-family: 'Inter', sans-serif !important;
-  color: var(--text-primary) !important;
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7) !important;
-  overflow: hidden;
-  backdrop-filter: blur(12px);
+.travel-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
 }
 
-.react-datepicker__header {
-  background-color: #091222 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-  padding-top: 1rem !important;
+/* Light Input Styles */
+.travel-input {
+  background: var(--bg-secondary);
+  border: 1px solid #D8E0E9;
+  border-radius: 12px;
+  color: var(--text-primary);
+  outline: none;
+  font-weight: 500;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.react-datepicker__current-month, 
-.react-datepicker__day-name, 
-.react-datepicker-time__header {
-  color: var(--text-primary) !important;
+.travel-input:focus {
+  border-color: var(--accent-teal);
+  box-shadow: 0 0 0 3px rgba(0, 168, 150, 0.1);
 }
 
-.react-datepicker__day {
-  color: var(--text-secondary) !important;
+/* Clean Button Styles */
+.btn-primary {
+  background-color: var(--primary-navy);
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
-.react-datepicker__day:hover {
-  background-color: rgba(79, 157, 255, 0.15) !important;
-  color: var(--accent-primary) !important;
-  border-radius: 8px;
+.btn-primary:hover {
+  background-color: #0b2e6d;
 }
 
-.react-datepicker__day--selected, 
-.react-datepicker__day--in-range, 
-.react-datepicker__day--in-selecting-range {
-  background-color: var(--accent-primary) !important;
-  color: #000000 !important;
-  font-weight: bold;
-  border-radius: 8px;
+.btn-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-weight: 600;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.react-datepicker__day--keyboard-selected {
-  background-color: rgba(79, 157, 255, 0.2) !important;
-  color: var(--accent-primary) !important;
-  border-radius: 8px;
+.btn-secondary:hover {
+  background-color: var(--bg-tertiary);
+  border-color: #CBD5E1;
 }
 
-.react-datepicker__triangle {
-  display: none !important;
+.btn-teal {
+  background-color: var(--accent-teal);
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: background-color 0.15s ease;
+}
+
+.btn-teal:hover {
+  background-color: #008f7f;
+}
+
+/* Custom Checkbox */
+input[type="checkbox"].travel-checkbox {
+  appearance: none;
+  background-color: var(--bg-secondary);
+  border: 1px solid #D8E0E9;
+  border-radius: 4px;
+  width: 16px;
+  height: 16px;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+input[type="checkbox"].travel-checkbox:checked {
+  background-color: var(--accent-teal);
+  border-color: var(--accent-teal);
+}
+
+input[type="checkbox"].travel-checkbox:checked::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  clip-path: polygon(14% 44%, 0 58%, 30% 88%, 90% 18%, 76% 4%, 30% 60%);
+  background-color: #FFFFFF;
 }
 
 /* Animations */
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-
-@keyframes float-reverse {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(8px); }
-  100% { transform: translateY(0px); }
-}
-
-@keyframes float-side {
-  0% { transform: translateX(0px); }
-  50% { transform: translateX(6px); }
-  100% { transform: translateX(0px); }
-}
-
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes meshBackground {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(79, 157, 255, 0.15), inset 0 0 10px rgba(79, 157, 255, 0.05);
+    transform: translateY(0);
   }
   50% {
-    box-shadow: 0 0 35px rgba(124, 108, 247, 0.3), inset 0 0 15px rgba(124, 108, 247, 0.1);
+    transform: translateY(-4px);
   }
 }
 
-/* Utility classes for premium look */
 .animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: float 6s ease-in-out infinite;
-  animation-delay: 2s;
-}
-
-.animate-float-delayed-more {
-  animation: float 6s ease-in-out infinite;
-  animation-delay: 4s;
-}
-
-.animate-float-reverse {
-  animation: float-reverse 7s ease-in-out infinite;
-}
-
-.animate-float-side {
-  animation: float-side 5s ease-in-out infinite;
-}
-
-.animate-spin-slow {
-  animation: spin-slow 20s linear infinite;
-}
-
-.animate-mesh {
-  background: radial-gradient(circle at 10% 20%, rgba(79, 157, 255, 0.08) 0%, transparent 40%),
-              radial-gradient(circle at 90% 80%, rgba(124, 108, 247, 0.08) 0%, transparent 40%),
-              radial-gradient(circle at 50% 50%, rgba(94, 234, 212, 0.03) 0%, transparent 50%),
-              var(--bg-primary);
-  background-size: 200% 200%;
-  animation: meshBackground 25s ease infinite;
-}
-
-/* Glassmorphism Styles */
-.glass-panel {
-  background: rgba(11, 21, 36, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.glass-card {
-  background: rgba(17, 24, 39, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glass-card:hover {
-  background: rgba(17, 24, 39, 0.6);
-  border-color: rgba(79, 157, 255, 0.25);
-  box-shadow: 0 12px 40px 0 rgba(79, 157, 255, 0.08), 0 0 20px rgba(79, 157, 255, 0.02);
-  transform: translateY(-4px);
-}
-
-.glass-card-purple:hover {
-  border-color: rgba(124, 108, 247, 0.3);
-  box-shadow: 0 12px 40px 0 rgba(124, 108, 247, 0.1), 0 0 20px rgba(124, 108, 247, 0.02);
-}
-
-.glass-card-teal:hover {
-  border-color: rgba(94, 234, 212, 0.3);
-  box-shadow: 0 12px 40px 0 rgba(94, 234, 212, 0.1), 0 0 20px rgba(94, 234, 212, 0.02);
-}
-
-.glass-navbar {
-  background: rgba(7, 17, 31, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.glass-input {
-  background: rgba(7, 17, 31, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  color: var(--text-primary);
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-.glass-input:focus {
-  border-color: var(--accent-primary);
-  background: rgba(7, 17, 31, 0.7);
-  box-shadow: 0 0 15px rgba(79, 157, 255, 0.15);
-}
-
-.glass-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  color: var(--text-secondary);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glass-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-.glass-btn-primary {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #1e6acc 100%);
-  border: none;
-  border-radius: 12px;
-  color: var(--text-primary);
-  box-shadow: 0 4px 20px rgba(79, 157, 255, 0.25);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.glass-btn-primary:hover {
-  box-shadow: 0 6px 25px rgba(79, 157, 255, 0.4);
-  transform: translateY(-1px);
-}
-
-/* Glow lines */
-.glow-pulse {
-  position: relative;
-}
-
-.glow-pulse::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple), var(--accent-secondary));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-/* Custom premium styling components */
-.text-gradient-primary {
-  background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-accent {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-purple) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.text-gradient-teal {
-  background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  animation: float 3s ease-in-out infinite;
 }

@@ -1,106 +1,185 @@
-import React from 'react';
-import { Navigation } from '../components/Navigation';
-import { Share2, Users, Link, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { Navigation } from '../components/navigation/Navigation';
+import { Share2, Users, Link, AlertCircle } from 'lucide-react';
+import { useToast } from '../components/common/Toast';
 
 export function EasySharing({ onBack }: { onBack: () => void }) {
+  const { showToast } = useToast();
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [collaborators, setCollaborators] = useState([
+    { email: 'john@example.com', role: 'Editor' },
+    { email: 'sarah@example.com', role: 'Viewer' }
+  ]);
+
+  const handleAddCollaborator = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput.trim()) return;
+    
+    const regex = /^\S+@\S+\.\S+$/;
+    if (!regex.test(emailInput)) {
+      setEmailError('Please enter a valid email address');
+      showToast('Invalid email address format', 'error');
+      return;
+    }
+    
+    setEmailError('');
+    if (collaborators.some(c => c.email === emailInput.trim())) {
+      showToast('Collaborator is already added', 'info');
+      return;
+    }
+
+    setCollaborators(prev => [...prev, { email: emailInput.trim(), role: 'Viewer' }]);
+    showToast(`Invite sent to ${emailInput.trim()}`, 'success');
+    setEmailInput('');
+  };
+
+  const handleRemoveCollaborator = (email: string) => {
+    setCollaborators(prev => prev.filter(c => c.email !== email));
+    showToast(`Access revoked for ${email}`, 'info');
+  };
+
+  const handleCopyLink = () => {
+    const shareUrl = 'https://travelsync.app/share/trip-938b';
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => {
+        showToast('Share link copied to clipboard!', 'success');
+      })
+      .catch(() => {
+        showToast('Failed to copy link to clipboard.', 'error');
+      });
+  };
+
   return (
-    <div className="min-h-screen animate-mesh pt-24 text-slate-100 relative overflow-hidden">
-      <Navigation onBack={onBack} title="Easy Journey Sharing" />
+    <div className="min-h-screen pt-24 text-slate-800 relative overflow-hidden flex flex-col justify-between bg-[#FAFAFA]">
+      <Navigation onBack={onBack} title="Journey Sharing" />
 
-      {/* Background Blurs */}
-      <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-[#4F9DFF]/5 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-[#7C6CF7]/5 rounded-full blur-[120px] pointer-events-none"></div>
-
-      <div className="max-w-[1280px] mx-auto px-6 sm:px-12 py-8 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="max-w-[1280px] w-full mx-auto px-6 sm:px-12 py-8 relative z-10 flex-1 flex flex-col justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full">
           
-          <div className="space-y-8">
+          <div className="space-y-6 text-left">
             {/* Share Itinerary Card */}
-            <div className="glass-card p-6 rounded-2xl glow-pulse relative">
-              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <Share2 className="w-5 h-5 text-[#4F9DFF]" />
+            <div className="travel-card p-6 rounded-[20px] bg-white border border-slate-200 shadow-sm relative">
+              <h2 className="text-base font-bold text-[#0F3D91] mb-6 flex items-center gap-2">
+                <Share2 className="w-5 h-5 text-[#00A896]" />
                 Share Itinerary
               </h2>
-              <div className="space-y-6">
+              <form onSubmit={handleAddCollaborator} className="space-y-4">
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Enter email addresses..."
-                    className="w-full glass-input pl-4 pr-20 py-3 text-xs sm:text-sm"
+                    placeholder="Enter email address..."
+                    value={emailInput}
+                    onChange={(e) => {
+                      setEmailInput(e.target.value);
+                      if (emailError) setEmailError('');
+                    }}
+                    className={`w-full travel-input pl-4 pr-20 py-3 text-xs sm:text-sm font-medium ${
+                      emailError ? 'border-red-500/50' : ''
+                    }`}
                   />
-                  <button className="absolute right-2 top-1.5 bottom-1.5 bg-[#4F9DFF]/15 hover:bg-[#4F9DFF]/30 text-[#4F9DFF] px-4.5 rounded-lg border border-[#4F9DFF]/20 text-xs font-bold transition">
+                  <button 
+                    type="submit" 
+                    className="absolute right-2 top-1.5 bottom-1.5 bg-[#00A896]/15 hover:bg-[#00A896]/30 text-[#00A896] px-4.5 rounded-lg border border-[#00A896]/20 text-xs font-bold transition uppercase tracking-wider"
+                  >
                     Add
                   </button>
                 </div>
+                
+                {emailError && (
+                  <div className="flex items-center gap-1 mt-1 text-[10px] text-red-500 font-semibold">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    <span>{emailError}</span>
+                  </div>
+                )}
+
                 <div className="flex flex-wrap gap-2">
-                  {['john@example.com', 'sarah@example.com'].map(email => (
-                    <div key={email} className="bg-[#4F9DFF]/10 text-[#4F9DFF] border border-[#4F9DFF]/20 px-3.5 py-1 rounded-full flex items-center gap-2 text-xs font-semibold">
-                      <span>{email}</span>
-                      <button className="text-xs hover:text-red-400 font-bold transition">×</button>
+                  {collaborators.map(c => (
+                    <div key={c.email} className="bg-[#00A896]/10 text-[#00A896] border border-[#00A896]/25 px-3 py-1 rounded-full flex items-center gap-2 text-xs font-semibold">
+                      <span>{c.email}</span>
+                      <button 
+                        type="button"
+                        onClick={() => handleRemoveCollaborator(c.email)} 
+                        className="text-xs hover:text-red-500 font-bold transition leading-none"
+                      >
+                        ×
+                      </button>
                     </div>
                   ))}
                 </div>
-              </div>
+              </form>
             </div>
 
             {/* Quick Share Card */}
-            <div className="glass-card p-6 rounded-2xl relative">
-              <h3 className="text-lg font-bold text-white mb-6">Quick Actions</h3>
+            <div className="travel-card p-6 rounded-[20px] bg-white border border-slate-200 shadow-sm relative">
+              <h3 className="text-xs font-bold text-slate-400 mb-6 font-mono uppercase tracking-widest">Quick Actions</h3>
               <div className="grid grid-cols-2 gap-4">
-                <button className="flex items-center justify-center gap-2 p-3.5 border border-white/5 rounded-xl bg-white/[0.01] hover:bg-white/[0.03] text-xs font-bold text-slate-350 transition">
-                  <Users className="w-4 h-4 text-[#4F9DFF]" />
+                <button 
+                  onClick={() => showToast(`Synchronized with ${collaborators.length} collaborators.`, 'success')}
+                  className="flex items-center justify-center gap-2 p-3.5 border border-slate-200 bg-slate-50 hover:bg-slate-100/50 rounded-xl text-xs font-bold text-slate-700 transition uppercase tracking-wider"
+                >
+                  <Users className="w-4 h-4 text-[#00A896]" />
                   <span>Co-travelers</span>
                 </button>
-                <button className="flex items-center justify-center gap-2 p-3.5 border border-white/5 rounded-xl bg-white/[0.01] hover:bg-white/[0.03] text-xs font-bold text-slate-350 transition">
-                  <Link className="w-4 h-4 text-[#5EEAD4]" />
-                  <span>Get Share Link</span>
+                <button 
+                  onClick={handleCopyLink}
+                  className="flex items-center justify-center gap-2 p-3.5 border border-slate-200 bg-slate-50 hover:bg-slate-100/50 rounded-xl text-xs font-bold text-slate-700 transition uppercase tracking-wider"
+                >
+                  <Link className="w-4 h-4 text-[#00A896]" />
+                  <span>Get Link</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6 text-left">
             {/* Shared With Card */}
-            <div className="glass-card p-6 rounded-2xl relative">
-              <h3 className="text-lg font-bold text-white mb-6">Shared Collaborators</h3>
-              <div className="space-y-3">
-                {[
-                  { email: 'john@example.com', role: 'Editor' },
-                  { email: 'sarah@example.com', role: 'Viewer' }
-                ].map(user => (
-                  <div key={user.email} className="flex items-center justify-between p-3.5 border border-white/5 rounded-xl bg-black/10">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#4F9DFF] to-[#7C6CF7] flex items-center justify-center border border-white/10 shrink-0">
-                        <span className="text-white font-bold text-xs font-mono">{user.email[0].toUpperCase()}</span>
+            <div className="travel-card p-6 rounded-[20px] bg-white border border-slate-200 shadow-sm relative">
+              <h3 className="text-xs font-bold text-slate-400 mb-6 font-mono uppercase tracking-widest">Collaborators</h3>
+              
+              {collaborators.length === 0 ? (
+                <div className="text-center py-8 space-y-2">
+                  <p className="text-slate-455 text-xs italic font-semibold">No co-travelers connected yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {collaborators.map(user => (
+                    <div key={user.email} className="flex items-center justify-between p-3.5 border border-slate-200/60 rounded-xl bg-slate-50 hover:border-slate-150 transition">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-[#0F3D91] flex items-center justify-center text-white text-xs font-bold font-mono shrink-0 shadow-sm">
+                          <span>{user.email[0].toUpperCase()}</span>
+                        </div>
+                        <div>
+                          <p className="text-xs sm:text-sm text-slate-800 font-bold truncate max-w-[130px] sm:max-w-[180px]">{user.email}</p>
+                          <p className="text-[9px] text-[#00A896] font-bold uppercase tracking-widest mt-0.5 font-mono">{user.role}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs sm:text-sm text-slate-200 font-semibold truncate max-w-[130px] sm:max-w-[180px]">{user.email}</p>
-                        <p className="text-[10px] text-[#4F9DFF] font-bold uppercase tracking-wider mt-0.5">{user.role}</p>
-                      </div>
+                      <button 
+                        onClick={() => handleRemoveCollaborator(user.email)}
+                        className="text-xs text-slate-500 hover:text-red-500 font-bold transition uppercase tracking-wider"
+                      >
+                        Revoke
+                      </button>
                     </div>
-                    <button className="text-xs text-slate-500 hover:text-red-400 font-semibold transition">Remove</button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Sharing Settings Card */}
-            <div className="glass-card p-6 rounded-2xl relative">
-              <h3 className="text-lg font-bold text-[#7C6CF7] mb-6 flex items-center gap-2">
-                <Settings className="w-4.5 h-4.5" />
-                Collaborator Settings
-              </h3>
+            <div className="travel-card p-6 rounded-[20px] bg-white border border-slate-200 shadow-sm relative">
+              <h3 className="text-xs font-bold text-slate-400 mb-6 font-mono uppercase tracking-widest">Permission Controls</h3>
               <div className="space-y-4">
                 {[
                   'Allow editing',
                   'Allow comments',
                   'Share notifications'
                 ].map(setting => (
-                  <div key={setting} className="flex items-center justify-between text-xs sm:text-sm text-slate-350 font-medium">
+                  <div key={setting} className="flex items-center justify-between text-xs sm:text-sm text-slate-650 font-semibold">
                     <span>{setting}</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-10 h-5.5 bg-white/10 peer-focus:outline-none rounded-full peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-[#4F9DFF] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#4F9DFF]/25"></div>
+                      <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#00A896] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#00A896]/20 border border-slate-350/50"></div>
                     </label>
                   </div>
                 ))}

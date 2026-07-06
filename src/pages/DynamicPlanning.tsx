@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Bell, Sparkles, Brain, Compass, DollarSign, CalendarRange, Import, Check, X, ShieldAlert } from 'lucide-react';
+import { Plus, Trash2, Sparkles, Brain, Compass, DollarSign, CalendarRange, Import, Check, X, ShieldAlert, Edit2 } from 'lucide-react';
 import axios from 'axios';
-import { Navigation } from '../components/Navigation';
+import { Navigation } from '../components/navigation/Navigation';
+import { useToast } from '../components/common/Toast';
 
 interface Expense {
   id: number;
@@ -19,11 +20,11 @@ interface Task {
 }
 
 export function DynamicPlanning({ onBack }: { onBack: () => void }) {
+  const { showToast } = useToast();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [budget, setBudget] = useState<number>(1000);
   const [totalExpenses, setTotalExpenses] = useState<number>(0);
-  const [notifications, setNotifications] = useState<string[]>([]);
 
   // AI Recommendation State
   const [query, setQuery] = useState('');
@@ -36,6 +37,19 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
   const [itineraryLoading, setItineraryLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
+  // Inline forms states
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [newBudgetVal, setNewBudgetVal] = useState('1000');
+
+  const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [expenseDesc, setExpenseDesc] = useState('');
+  const [expenseAmount, setExpenseAmount] = useState('');
+
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [taskDesc, setTaskDesc] = useState('');
+  const [taskTime, setTaskTime] = useState('09:00 AM');
+  const [taskDate, setTaskDate] = useState('');
+
   const availableTags = ["adventure", "nature", "culture", "relaxation", "culinary", "nightlife"];
 
   useEffect(() => {
@@ -43,11 +57,13 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
     const savedExpenses = localStorage.getItem('expenses');
     const savedTasks = localStorage.getItem('tasks');
 
-    if (savedBudget) setBudget(Number(savedBudget));
+    if (savedBudget) {
+      setBudget(Number(savedBudget));
+      setNewBudgetVal(savedBudget);
+    }
     if (savedExpenses) {
       const parsedExpenses = JSON.parse(savedExpenses);
       setExpenses(parsedExpenses);
-      // recalculate total expenses
       const total = parsedExpenses.reduce((sum: number, exp: any) => sum + exp.amount, 0);
       setTotalExpenses(total);
     }
@@ -89,40 +105,70 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
           task.year === currentTime.getFullYear() &&
           task.month === currentTime.toLocaleString('default', { month: 'long' })
         ) {
-          setNotifications((prev) => [
-            ...prev,
-            `Task "${task.description}" is due now!`,
-          ]);
+          showToast(`Task Overdue: "${task.description}" is scheduled for now!`, 'info');
         }
       });
     }, 60000);
 
     return () => clearInterval(interval);
-  }, [tasks]);
+  }, [tasks, showToast]);
 
-  const handleAddExpense = (description: string, amount: number) => {
-    const newExpense = { id: Date.now(), description, amount };
+  const handleAddExpenseSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!expenseDesc.trim()) {
+      showToast('Please enter an expense description', 'error');
+      return;
+    }
+    const val = parseFloat(expenseAmount);
+    if (isNaN(val) || val <= 0) {
+      showToast('Please enter a valid expense amount greater than 0', 'error');
+      return;
+    }
+
+    const newExpense = { id: Date.now(), description: expenseDesc.trim(), amount: val };
     const updated = [...expenses, newExpense];
     setExpenses(updated);
     setTotalExpenses(updated.reduce((sum, exp) => sum + exp.amount, 0));
+    
+    setExpenseDesc('');
+    setExpenseAmount('');
+    setIsAddingExpense(false);
+    showToast('Expense recorded successfully.', 'success');
   };
 
   const handleRemoveExpense = (id: number) => {
     const updated = expenses.filter((exp) => exp.id !== id);
     setExpenses(updated);
     setTotalExpenses(updated.reduce((sum, exp) => sum + exp.amount, 0));
+    showToast('Expense removed', 'info');
   };
 
-  const handleAddTask = (description: string, time: string, date: string) => {
+  const handleAddTaskSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskDesc.trim()) {
+      showToast('Please enter a task description', 'error');
+      return;
+    }
+    if (!taskDate) {
+      showToast('Please select a date', 'error');
+      return;
+    }
+
+    const dateObj = new Date(taskDate);
     const newTask = {
       id: Date.now(),
-      description,
+      description: taskDesc.trim(),
       completed: false,
-      time,
-      month: new Date(date).toLocaleString('default', { month: 'long' }),
-      year: new Date(date).getFullYear(),
+      time: taskTime,
+      month: dateObj.toLocaleString('default', { month: 'long' }),
+      year: dateObj.getFullYear(),
     };
     setTasks((prev) => [...prev, newTask]);
+    
+    setTaskDesc('');
+    setTaskDate('');
+    setIsAddingTask(false);
+    showToast('Task added to your itinerary schedule.', 'success');
   };
 
   const toggleTaskCompletion = (id: number) => {
@@ -135,9 +181,26 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
 
   const handleRemoveTask = (id: number) => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
+    showToast('Task removed', 'info');
+  };
+
+  const handleUpdateBudget = (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(newBudgetVal);
+    if (isNaN(val) || val < 0) {
+      showToast('Please enter a valid budget amount', 'error');
+      return;
+    }
+    setBudget(val);
+    setIsEditingBudget(false);
+    showToast('Budget threshold updated.', 'success');
   };
 
   const handleAISearch = async () => {
+    if (!query.trim() && selectedTags.length === 0) {
+      showToast('Please describe your trip search or select tags', 'error');
+      return;
+    }
     setSearchLoading(true);
     setApiError('');
     setRecs([]);
@@ -153,6 +216,8 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
         setRecs(response.data.results);
         if (response.data.results.length === 0) {
           setApiError('No destinations matched your criteria. Try widening your tags or description.');
+        } else {
+          showToast(`Found ${response.data.results.length} destination matches!`, 'success');
         }
       } else {
         setApiError('Failed to fetch recommendations.');
@@ -160,6 +225,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
     } catch (err: any) {
       console.error(err);
       setApiError('Could not connect to the ML backend. Please make sure the backend server is running locally on port 8000.');
+      showToast('ML backend offline.', 'error');
     } finally {
       setSearchLoading(false);
     }
@@ -177,6 +243,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
       });
       if (response.data.success) {
         setActiveItinerary(response.data.itinerary);
+        showToast('AI Itinerary generated successfully.', 'success');
       } else {
         setApiError('Failed to generate itinerary.');
       }
@@ -191,22 +258,17 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
   const handleImportItinerary = () => {
     if (!activeItinerary) return;
 
-    // 1. Add estimated cost as an expense
     const totalCost = activeItinerary.estimated_cost_usd;
     handleAddExpense(`Trip to ${activeItinerary.destination}`, totalCost);
 
-    // 2. Import schedule items as tasks
     const newTasks = [...tasks];
     let addedCount = 0;
-    
-    // Set task dates starting tomorrow
     const baseDate = new Date();
     
     activeItinerary.itinerary.forEach((day: any) => {
       day.schedule.forEach((item: any) => {
         const taskDate = new Date(baseDate);
-        taskDate.setDate(baseDate.getDate() + day.day); // Day 1 is tomorrow, Day 2 day after, etc.
-        const dateStr = taskDate.toISOString().split('T')[0];
+        taskDate.setDate(baseDate.getDate() + day.day);
 
         const newTaskItem = {
           id: Date.now() + addedCount,
@@ -222,12 +284,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
     });
 
     setTasks(newTasks);
-    
-    // Clear active itinerary view & show success notification
-    setNotifications((prev) => [
-      ...prev,
-      `Imported: Added 1 expense ($${totalCost}) and ${addedCount} activities to your plan!`,
-    ]);
+    showToast(`Successfully added 1 expense ($${totalCost}) and ${addedCount} schedule activities!`, 'success');
     setActiveItinerary(null);
   };
 
@@ -237,190 +294,332 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
     );
   };
 
-  return (
-    <div className="min-h-screen animate-mesh pt-24 text-slate-100 font-sans pb-24 relative overflow-hidden">
-      <Navigation onBack={onBack} title="AI Itinerary & Planning" />
-      {notifications.length > 0 && (
-        <div className="fixed top-20 right-4 bg-gradient-to-r from-[#4F9DFF] to-[#7C6CF7] text-white px-6 py-4 rounded-xl font-bold shadow-lg z-50 flex items-center gap-2 transition duration-300">
-          <Sparkles className="w-5 h-5 animate-pulse" />
-          <span>{notifications[notifications.length - 1]}</span>
-          <button onClick={() => setNotifications([])} className="ml-4 hover:scale-110">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+  const budgetUsagePercent = budget > 0 ? Math.min(100, Math.round((totalExpenses / budget) * 100)) : 0;
 
-      <div className="max-w-[1280px] mx-auto px-6 sm:px-12">
+  return (
+    <div className="min-h-screen pt-24 text-slate-800 pb-24 relative overflow-hidden flex flex-col justify-between bg-[#FAFAFA]">
+      <Navigation onBack={onBack} title="AI Itinerary & Planning" />
+
+      <div className="max-w-[1280px] w-full mx-auto px-6 sm:px-12 py-8 relative z-10 flex-1 flex flex-col justify-center">
         {/* Main Grid for Budget & Tasks */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12 max-w-6xl mx-auto w-full">
+          
           {/* Budget Card */}
-          <div className="glass-card p-6 rounded-2xl glow-pulse relative">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-sky-400 flex items-center gap-2">
-                <DollarSign className="w-6 h-6 text-sky-400" />
-                Budget Summary
-              </h2>
-              <button
-                className="p-2 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 rounded-lg transition duration-300"
-                onClick={() => {
-                  const newBudget = Number(prompt('Enter new budget:', budget.toString()));
-                  if (!isNaN(newBudget) && newBudget >= 0) setBudget(newBudget);
-                }}
-              >
-                <Plus className="w-5 h-5 text-sky-400" />
-              </button>
+          <div className="travel-card p-6 rounded-[20px] relative text-left flex flex-col justify-between h-full min-h-[300px] bg-white">
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-base font-bold text-[#0F3D91] flex items-center gap-2 tracking-tight">
+                  <DollarSign className="w-5 h-5 text-[#00A896]" />
+                  Budget Summary
+                </h2>
+                {!isEditingBudget && (
+                  <button
+                    onClick={() => setIsEditingBudget(true)}
+                    className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition duration-200"
+                    aria-label="Edit budget"
+                  >
+                    <Edit2 className="w-3.5 h-3.5 text-[#00A896]" />
+                  </button>
+                )}
+              </div>
+
+              {isEditingBudget ? (
+                <form onSubmit={handleUpdateBudget} className="flex gap-2 mb-4">
+                  <input
+                    type="number"
+                    value={newBudgetVal}
+                    onChange={(e) => setNewBudgetVal(e.target.value)}
+                    className="travel-input p-2 text-xs w-28 font-semibold text-right"
+                    min="0"
+                    required
+                  />
+                  <button type="submit" className="px-3 py-1 btn-teal text-xs font-bold rounded-lg">
+                    Save
+                  </button>
+                  <button type="button" onClick={() => setIsEditingBudget(false)} className="px-2 border border-slate-200 rounded-lg text-xs hover:bg-slate-50">
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <div className="space-y-4 text-xs font-semibold">
+                  <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                    <span className="text-slate-500">Total Budget:</span>
+                    <span className="text-slate-800 font-mono font-bold">${budget.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-100 pb-2.5">
+                    <span className="text-slate-500">Total Expenses:</span>
+                    <span className="text-red-500 font-mono font-bold">${totalExpenses.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between pb-2.5">
+                    <span className="text-slate-500">Remaining:</span>
+                    <span className={`font-black text-sm font-mono ${budget - totalExpenses >= 0 ? 'text-[#00A896]' : 'text-red-500'}`}>
+                      ${(budget - totalExpenses).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="space-y-4">
-              <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Total Budget:</span>
-                <span className="font-semibold text-white">${budget.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400">Total Expenses:</span>
-                <span className="font-semibold text-red-400">${totalExpenses.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between pt-2">
-                <span className="text-slate-400">Remaining:</span>
-                <span className={`font-bold text-lg ${budget - totalExpenses >= 0 ? 'text-sky-400' : 'text-red-500'}`}>
-                  ${(budget - totalExpenses).toFixed(2)}
-                </span>
+
+            {/* Progress Gauge */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest font-mono">Usage Limit</span>
+              <div className="flex items-center gap-3">
+                <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="18" cy="18" r="14" className="stroke-slate-100" strokeWidth="2.5" fill="transparent" />
+                    <circle 
+                      cx="18" 
+                      cy="18" 
+                      r="14" 
+                      className={`transition-all duration-500 ${
+                        budgetUsagePercent > 90 ? 'stroke-red-500' :
+                        budgetUsagePercent > 70 ? 'stroke-amber-500' :
+                        'stroke-[#00A896]'
+                      }`}
+                      strokeWidth="2.5" 
+                      fill="transparent" 
+                      strokeDasharray="88" 
+                      strokeDashoffset={88 - (88 * budgetUsagePercent) / 100} 
+                    />
+                  </svg>
+                  <span className="absolute text-[8px] font-mono font-bold text-slate-850">{budgetUsagePercent}%</span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Expense List Card */}
-          <div className="glass-card p-6 rounded-2xl glow-pulse relative">
-            <h3 className="text-xl font-bold text-sky-400 mb-4 flex items-center gap-2">
-              <Compass className="w-6 h-6" />
-              Expenses
-            </h3>
-            <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 mb-4">
-              {expenses.length === 0 ? (
-                <p className="text-slate-500 text-sm italic">No expenses added yet.</p>
-              ) : (
-                expenses.map((expense) => (
-                  <div key={expense.id} className="flex justify-between items-center bg-slate-900/50 border border-slate-800 rounded-lg p-2 text-sm">
-                    <span className="text-slate-300 truncate max-w-[150px]">{expense.description}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-white">${expense.amount.toFixed(2)}</span>
-                      <button
-                        onClick={() => handleRemoveExpense(expense.id)}
-                        className="p-1 hover:text-red-400 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+          <div className="travel-card p-6 rounded-[20px] relative text-left flex flex-col justify-between h-full min-h-[300px] bg-white">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-bold text-[#0F3D91] flex items-center gap-2 tracking-tight">
+                  <Compass className="w-5 h-5 text-[#00A896]" />
+                  Expenses
+                </h3>
+                {!isAddingExpense && (
+                  <button
+                    onClick={() => setIsAddingExpense(true)}
+                    className="p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[#00A896] transition"
+                    aria-label="Add expense"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {isAddingExpense && (
+                <form onSubmit={handleAddExpenseSubmit} className="space-y-3 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Expense name (e.g. Flight)"
+                    value={expenseDesc}
+                    onChange={(e) => setExpenseDesc(e.target.value)}
+                    className="w-full travel-input p-2 text-xs font-semibold"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      required
+                      min="0.01"
+                      step="0.01"
+                      placeholder="Amount ($)"
+                      value={expenseAmount}
+                      onChange={(e) => setExpenseAmount(e.target.value)}
+                      className="w-full travel-input p-2 text-xs font-semibold"
+                    />
+                    <button type="submit" className="px-3 btn-teal text-xs font-bold rounded-lg">
+                      Save
+                    </button>
+                    <button type="button" onClick={() => setIsAddingExpense(false)} className="px-2.5 border border-slate-200 rounded-lg text-xs hover:bg-slate-100">
+                      X
+                    </button>
                   </div>
-                ))
+                </form>
               )}
+
+              <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 mb-2">
+                {expenses.length === 0 ? (
+                  <div className="text-center py-6 space-y-2">
+                    <p className="text-slate-400 text-xs italic font-semibold">No expenses recorded yet.</p>
+                    {!isAddingExpense && (
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingExpense(true)}
+                        className="text-[10px] font-bold text-[#00A896] uppercase tracking-widest font-mono hover:underline"
+                      >
+                        + Create Expense
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  expenses.map((expense) => (
+                    <div key={expense.id} className="flex justify-between items-center bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-xs font-semibold">
+                      <span className="text-slate-650 truncate max-w-[130px]">{expense.description}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-800 font-mono font-bold">${expense.amount.toFixed(2)}</span>
+                        <button
+                          onClick={() => handleRemoveExpense(expense.id)}
+                          className="p-1 hover:text-red-500 text-slate-400 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            <button
-              className="w-full py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg font-bold border border-sky-500/30 transition duration-300"
-              onClick={() => {
-                const description = prompt('Enter expense description:');
-                const amount = Number(prompt('Enter expense amount:'));
-                if (description && !isNaN(amount) && amount > 0) {
-                  handleAddExpense(description, amount);
-                }
-              }}
-            >
-              Add Expense
-            </button>
+            <div className="h-2"></div>
           </div>
 
-          {/* Task Card */}
-          <div className="glass-card p-6 rounded-2xl glow-pulse relative">
-            <h3 className="text-xl font-bold text-sky-400 mb-4 flex items-center gap-2">
-              <CalendarRange className="w-6 h-6" />
-              Schedule & Tasks
-            </h3>
-            <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 mb-4">
-              {tasks.length === 0 ? (
-                <p className="text-slate-500 text-sm italic">No tasks or activities scheduled.</p>
-              ) : (
-                tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className={`flex justify-between items-center p-2 rounded-lg border text-xs transition duration-300 ${
-                      task.completed
-                        ? 'bg-zinc-900 border-zinc-800 text-zinc-500 line-through'
-                        : 'bg-sky-950/20 border-sky-500/20 text-white'
-                    }`}
+          {/* Task Checklist Card */}
+          <div className="travel-card p-6 rounded-[20px] relative text-left flex flex-col justify-between h-full min-h-[300px] bg-white">
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-bold text-[#0F3D91] flex items-center gap-2 tracking-tight">
+                  <CalendarRange className="w-5 h-5 text-[#00A896]" />
+                  Schedule & Tasks
+                </h3>
+                {!isAddingTask && (
+                  <button
+                    onClick={() => setIsAddingTask(true)}
+                    className="p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[#00A896] transition"
+                    aria-label="Add task"
                   >
-                    <div className="truncate max-w-[170px]">
-                      <p className="font-semibold truncate">{task.description}</p>
-                      <p className="text-[10px] text-slate-400">
-                        {task.month} {task.year} - {task.time}
-                      </p>
-                    </div>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => toggleTaskCompletion(task.id)}
-                        className={`p-1 rounded ${
-                          task.completed ? 'text-zinc-600 hover:text-sky-400' : 'text-sky-400 hover:text-sky-300'
-                        }`}
-                      >
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleRemoveTask(task.id)}
-                        className="p-1 text-red-500 hover:text-red-400"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {isAddingTask && (
+                <form onSubmit={handleAddTaskSubmit} className="space-y-3 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Task details (e.g. Check-in)"
+                    value={taskDesc}
+                    onChange={(e) => setTaskDesc(e.target.value)}
+                    className="w-full travel-input p-2 text-xs font-semibold"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="date"
+                      required
+                      value={taskDate}
+                      onChange={(e) => setTaskDate(e.target.value)}
+                      className="travel-input p-2 text-xs font-semibold w-full"
+                    />
+                    <input
+                      type="text"
+                      required
+                      placeholder="9:00 AM"
+                      value={taskTime}
+                      onChange={(e) => setTaskTime(e.target.value)}
+                      className="travel-input p-2 text-xs font-semibold w-full text-center"
+                    />
                   </div>
-                ))
+                  <div className="flex gap-2 justify-end pt-1">
+                    <button type="submit" className="px-3 py-1.5 btn-primary text-xs text-white">
+                      Save
+                    </button>
+                    <button type="button" onClick={() => setIsAddingTask(false)} className="px-2.5 border border-slate-200 rounded-lg text-xs hover:bg-slate-100">
+                      X
+                    </button>
+                  </div>
+                </form>
               )}
+
+              <div className="max-h-[160px] overflow-y-auto pr-1 space-y-2 mb-2">
+                {tasks.length === 0 ? (
+                  <div className="text-center py-6 space-y-2">
+                    <p className="text-slate-400 text-xs italic font-semibold">Your schedule is clear.</p>
+                    {!isAddingTask && (
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingTask(true)}
+                        className="text-[10px] font-bold text-[#00A896] uppercase tracking-widest font-mono hover:underline"
+                      >
+                        + Add Activity
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className={`flex justify-between items-center p-2 rounded-lg border text-xs font-semibold transition duration-200 ${
+                        task.completed
+                          ? 'bg-slate-50 border-slate-200 text-slate-400 line-through'
+                          : 'bg-slate-50 border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      <div className="truncate max-w-[150px]">
+                        <p className="font-bold truncate leading-tight">{task.description}</p>
+                        <p className="text-[9px] text-slate-450 mt-0.5 font-mono font-bold">
+                          {task.month} {task.year} - {task.time}
+                        </p>
+                      </div>
+                      <div className="flex gap-0.5">
+                        <button
+                          onClick={() => toggleTaskCompletion(task.id)}
+                          className={`p-1 rounded ${
+                            task.completed ? 'text-slate-400 hover:text-[#00A896]' : 'text-[#00A896] hover:text-[#00a896]/80'
+                          }`}
+                          aria-label="Toggle completion"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleRemoveTask(task.id)}
+                          className="p-1 text-slate-400 hover:text-red-500"
+                          aria-label="Delete task"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-            <button
-              className="w-full py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 rounded-lg font-bold border border-sky-500/30 transition duration-300"
-              onClick={() => {
-                const description = prompt('Enter task description:');
-                const time = prompt('Enter task time (e.g. 09:00 AM):');
-                const date = prompt('Enter task date (YYYY-MM-DD):');
-                if (description && time && date) {
-                  handleAddTask(description, time, date);
-                }
-              }}
-            >
-              Add Task
-            </button>
+            <div className="h-2"></div>
           </div>
         </div>
 
         {/* AI Travel Recommendation Section */}
-        <div className="glass-card p-8 rounded-3xl glow-pulse mb-12 relative overflow-hidden">
+        <div className="travel-card p-6 sm:p-8 rounded-[20px] bg-white border border-slate-200 mb-12 max-w-6xl mx-auto w-full relative text-left shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <Brain className="w-8 h-8 text-sky-400 animate-pulse" />
+            <div className="w-10 h-10 rounded-xl bg-[#0F3D91]/5 border border-[#0F3D91]/10 flex items-center justify-center text-[#0F3D91]">
+              <Brain className="w-5 h-5" />
+            </div>
             <div>
-              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-xl font-bold text-[#0F3D91] flex items-center gap-2 tracking-tight">
                 AI Travel Planner & Recommender
-                <span className="text-[10px] bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold">
-                  ML-Powered
+                <span className="text-[9px] bg-[#00A896]/10 text-[#00A896] border border-[#00A896]/20 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold font-mono">
+                  Helper Tool
                 </span>
               </h2>
-              <p className="text-slate-400 text-sm">Powered by scikit-learn Content-Based Filtering & Cosine Similarity</p>
+              <p className="text-slate-450 text-xs mt-0.5">Content-Based Recommendation Engine & Cosine Similarity</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
-            {/* Left Query input column */}
             <div className="md:col-span-8 space-y-4">
               <div>
-                <label className="block text-slate-300 text-sm font-semibold mb-2">What kind of trip are you looking for?</label>
+                <label className="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 font-mono">What kind of trip are you looking for?</label>
                 <input
                   type="text"
                   placeholder="e.g. Seeking ancient history, serene temples, beautiful autumn scenery, and amazing street food"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full glass-input p-3 text-white"
+                  className="w-full travel-input p-3 text-slate-800 text-xs sm:text-sm font-medium"
                 />
               </div>
 
               {/* Tag Selector */}
               <div>
-                <label className="block text-slate-300 text-sm font-semibold mb-2">Select Your Interests & Styles</label>
+                <label className="block text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 font-mono">Select Your Interests & Styles</label>
                 <div className="flex flex-wrap gap-2">
                   {availableTags.map((tag) => {
                     const isSelected = selectedTags.includes(tag);
@@ -428,10 +627,10 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                       <button
                         key={tag}
                         onClick={() => toggleTag(tag)}
-                        className={`px-3 py-1.5 rounded-full border text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                        className={`px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-wider transition-all duration-200 ${
                           isSelected
-                            ? 'bg-sky-500 text-white border-sky-400 shadow-[0_0_10px_rgba(14,165,233,0.4)] scale-105'
-                            : 'bg-slate-900/50 border-slate-800 text-sky-400 hover:border-slate-750 hover:bg-sky-500/5'
+                            ? 'bg-[#00A896] text-white border-[#00A896] shadow-sm'
+                            : 'bg-white border-slate-200 text-[#00A896] hover:bg-slate-50'
                         }`}
                       >
                         {tag}
@@ -442,15 +641,15 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
               </div>
             </div>
 
-            {/* Right configuration column */}
+            {/* Config & Search Button */}
             <div className="md:col-span-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-300 text-sm font-semibold mb-2">Budget Tier</label>
+                  <label className="block text-slate-550 text-xs font-bold uppercase tracking-wider mb-2 font-mono">Budget Tier</label>
                   <select
                     value={budgetTier}
                     onChange={(e) => setBudgetTier(e.target.value)}
-                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl p-3 text-white focus:border-sky-500 outline-none transition"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-700 text-xs sm:text-sm font-semibold outline-none focus:border-[#00A896] transition"
                   >
                     <option value="any">Any Budget</option>
                     <option value="budget">Budget Friendly</option>
@@ -459,14 +658,14 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-300 text-sm font-semibold mb-2">Duration (Days)</label>
+                  <label className="block text-slate-555 text-xs font-bold uppercase tracking-wider mb-2 font-mono">Duration (Days)</label>
                   <input
                     type="number"
                     min="1"
                     max="10"
                     value={duration}
                     onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full bg-[#070b13] border border-slate-800 rounded-xl p-3 text-white focus:border-sky-500 outline-none transition"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-700 text-xs sm:text-sm font-semibold outline-none focus:border-[#00A896] transition text-right font-mono"
                   />
                 </div>
               </div>
@@ -474,76 +673,95 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
               <button
                 onClick={handleAISearch}
                 disabled={searchLoading}
-                className="w-full py-3.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white rounded-xl font-bold tracking-wider shadow-[0_0_15px_rgba(14,165,233,0.2)] hover:shadow-[0_0_25px_rgba(14,165,233,0.4)] transition duration-300 hover:scale-[1.02] flex justify-center items-center gap-2"
+                className="w-full py-3.5 btn-teal text-white rounded-xl font-bold tracking-wider shadow-sm hover:scale-[1.01] transition duration-200 flex justify-center items-center gap-2 text-xs uppercase"
               >
                 {searchLoading ? (
-                  <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 ) : (
                   <>
-                    <Sparkles className="w-5 h-5" />
-                    MATCH DESTINATIONS
+                    <Sparkles className="w-4 h-4" />
+                    Match Destinations
                   </>
                 )}
               </button>
             </div>
           </div>
 
-          {/* API Error Box */}
           {apiError && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl p-4 mb-6 flex items-start gap-2 text-sm shadow-[0_0_10px_rgba(239,68,68,0.1)]">
-              <ShieldAlert className="w-5 h-5 shrink-0" />
+            <div className="bg-red-500/5 border border-red-500/25 text-red-500 rounded-xl p-4 mb-6 flex items-start gap-2 text-xs">
+              <ShieldAlert className="w-4.5 h-4.5 shrink-0 mt-0.5" />
               <span>{apiError}</span>
             </div>
           )}
 
-          {/* Recommendations Results list */}
-          {recs.length > 0 && (
-            <div className="border-t border-slate-800 pt-6 mt-6">
-              <h3 className="text-xl font-bold text-sky-400 mb-4">Top AI Matches</h3>
+          {/* AI Loader */}
+          {searchLoading && (
+            <div className="flex flex-col items-center justify-center py-10 border-t border-slate-100">
+              <span className="w-8 h-8 border-3 border-[#00A896] border-t-transparent rounded-full animate-spin mb-4"></span>
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest font-mono">Running Content-Based Filtering Matrix...</p>
+            </div>
+          )}
+
+          {/* Empty matched recommendations list state */}
+          {recs.length === 0 && !searchLoading && !apiError && (
+            <div className="border-t border-slate-100 pt-10 text-center space-y-3">
+              <div className="w-10 h-10 bg-slate-50 border border-slate-200 flex items-center justify-center rounded-xl text-slate-400 mx-auto animate-float">
+                <Compass className="w-5 h-5" />
+              </div>
+              <h4 className="text-sm font-bold text-slate-800">No Matched Destinations Yet</h4>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed font-semibold">
+                Describe your desired trip (e.g. serene temples, street food, autumn leaves) and search to fetch matching destinations.
+              </p>
+            </div>
+          )}
+
+          {/* Recommendations Matches List */}
+          {recs.length > 0 && !searchLoading && (
+            <div className="border-t border-slate-100 pt-6 mt-6">
+              <h3 className="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest font-mono">Top AI Matches</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {recs.map((dest) => (
                   <div
                     key={dest.id}
-                    className="bg-[#0b0f19]/80 border border-slate-800 hover:border-sky-500/20 rounded-2xl p-5 transition duration-300 flex flex-col justify-between"
+                    className="bg-slate-50 border border-slate-200 hover:border-[#00A896]/20 rounded-[20px] p-5 transition duration-200 flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-lg font-bold text-white leading-tight">
-                          {dest.name}, <span className="text-slate-400 text-sm font-normal">{dest.country}</span>
+                        <h4 className="text-sm font-bold text-slate-850 leading-tight">
+                          {dest.name}, <span className="text-slate-400 text-[11px] font-normal">{dest.country}</span>
                         </h4>
-                        <span className="px-2 py-0.5 bg-sky-500/20 text-sky-400 text-xs font-bold rounded-lg tracking-wide shadow-sm border border-sky-500/30">
+                        <span className="px-2 py-0.5 bg-[#00A896]/10 text-[#00A896] text-[10px] font-mono font-bold rounded-lg border border-[#00A896]/20 shrink-0 ml-2">
                           {dest.match_score}% Match
                         </span>
                       </div>
                       
-                      {/* Match Score Indicator Bar */}
-                      <div className="w-full bg-zinc-900 h-1.5 rounded-full mb-4 overflow-hidden border border-zinc-800">
+                      <div className="w-full bg-slate-200 h-1.5 rounded-full mb-4 overflow-hidden">
                         <div
-                          className="bg-gradient-to-r from-sky-500 to-indigo-400 h-full rounded-full"
+                          className="bg-[#00A896] h-full rounded-full"
                           style={{ width: `${dest.match_score}%` }}
                         ></div>
                       </div>
 
-                      <p className="text-slate-400 text-xs line-clamp-3 mb-4 leading-relaxed">{dest.description}</p>
+                      <p className="text-slate-500 text-xs line-clamp-3 mb-4 leading-relaxed font-medium">{dest.description}</p>
                       
                       <div className="flex flex-wrap gap-1 mb-4">
                         {dest.tags.split(' ').map((t: string) => (
-                          <span key={t} className="text-[9px] bg-zinc-850 border border-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded uppercase font-semibold">
+                          <span key={t} className="text-[8px] bg-white border border-slate-200 text-slate-500 px-1.5 py-0.5 rounded uppercase font-semibold font-mono">
                             {t}
                           </span>
                         ))}
                       </div>
                     </div>
 
-                    <div className="space-y-2 mt-2">
-                      <div className="flex justify-between text-xs text-slate-500">
-                        <span>Budget: <strong className="text-zinc-300 capitalize">{dest.budget_tier}</strong></span>
-                        <span>Location: <strong className="text-zinc-300">{dest.latitude.toFixed(2)}, {dest.longitude.toFixed(2)}</strong></span>
+                    <div className="space-y-2 mt-2 pt-2 border-t border-slate-200">
+                      <div className="flex justify-between text-[10px] text-slate-450 font-mono font-bold">
+                        <span>Budget: <strong className="text-slate-500 uppercase">{dest.budget_tier}</strong></span>
+                        <span>Coord: <strong className="text-slate-500">{dest.latitude.toFixed(1)}, {dest.longitude.toFixed(1)}</strong></span>
                       </div>
                       <button
                         onClick={() => handleGenerateItinerary(dest.name)}
                         disabled={itineraryLoading}
-                        className="w-full py-2 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg border border-sky-500/20 hover:border-sky-500/40 text-xs transition duration-200"
+                        className="w-full py-2 bg-[#00A896]/10 hover:bg-[#00A896]/15 text-[#00A896] font-bold rounded-lg border border-[#00A896]/20 text-xs transition duration-200 uppercase tracking-wider"
                       >
                         Generate Itinerary
                       </button>
@@ -556,42 +774,41 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
 
           {/* Active Generated Itinerary Timeline */}
           {itineraryLoading && (
-            <div className="flex flex-col items-center justify-center py-12 border-t border-slate-800 mt-6">
-              <span className="w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-4"></span>
-              <p className="text-slate-400 text-sm">Processing activity coordinates and tags via ML Optimizer...</p>
+            <div className="flex flex-col items-center justify-center py-12 border-t border-slate-100 mt-6">
+              <span className="w-8 h-8 border-3 border-[#00A896] border-t-transparent rounded-full animate-spin mb-4"></span>
+              <p className="text-slate-500 text-xs font-semibold font-mono uppercase tracking-wider">Processing coordinates and optimizing schedule...</p>
             </div>
           )}
 
-          {activeItinerary && (
-            <div className="border-t border-slate-800 pt-8 mt-8 bg-slate-900/10 p-6 rounded-2xl border border-slate-800 shadow-inner">
+          {activeItinerary && !itineraryLoading && (
+            <div className="border-t border-slate-100 pt-8 mt-8 bg-slate-50 p-6 rounded-[20px] border border-slate-200">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                  <h3 className="text-2xl font-bold text-sky-400">
+                  <h3 className="text-lg font-bold text-slate-800 leading-tight">
                     AI Itinerary: {activeItinerary.destination}
                   </h3>
-                  <p className="text-slate-400 text-xs">
-                    Geographically grouped activities for {activeItinerary.days} Days • Estimated Budget: ${activeItinerary.estimated_cost_usd}
+                  <p className="text-slate-500 text-[11px] font-bold mt-1">
+                    Geographically grouped activities for {activeItinerary.days} Days • Budget: ${activeItinerary.estimated_cost_usd}
                   </p>
                 </div>
                 <button
                   onClick={handleImportItinerary}
-                  className="px-5 py-2.5 bg-sky-500 text-white hover:bg-sky-400 font-bold rounded-xl text-sm transition duration-200 hover:scale-[1.02] flex items-center gap-2 shadow-[0_0_15px_rgba(14,165,233,0.3)]"
+                  className="px-5 py-2.5 btn-teal text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-sm flex items-center gap-2"
                 >
                   <Import className="w-4 h-4" />
-                  Import to Tasks & Budget
+                  Import to Schedule
                 </button>
               </div>
 
-              {/* Day Timeline */}
+              {/* Day Timeline Connected by subtle route line */}
               <div className="space-y-6">
                 {activeItinerary.itinerary.map((day: any) => (
-                  <div key={day.day} className="relative pl-6 border-l-2 border-sky-500/20 space-y-4">
-                    {/* Day circle marker */}
-                    <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-[#0b0f19] border-2 border-sky-500 flex items-center justify-center shadow-[0_0_8px_rgba(14,165,233,0.5)]">
-                      <div className="w-1.5 h-1.5 rounded-full bg-sky-400"></div>
+                  <div key={day.day} className="relative pl-6 border-l-2 border-dashed border-slate-200 space-y-4">
+                    <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-[#FAFAFA] border-2 border-[#00A896] flex items-center justify-center shadow-sm">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#00A896]"></div>
                     </div>
                     
-                    <h4 className="text-md font-bold text-white flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-[#0F3D91]">
                       Day {day.day} Plan
                     </h4>
 
@@ -600,20 +817,22 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                       {day.schedule.map((item: any, sIdx: number) => (
                         <div
                           key={sIdx}
-                          className="bg-[#0b0f19]/80 border border-slate-800 rounded-xl p-4 shadow-sm hover:border-sky-500/20 transition"
+                          className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between h-full hover:border-[#00A896]/20 transition"
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="text-[10px] text-sky-400 font-mono font-bold bg-sky-500/10 px-1.5 py-0.5 rounded">
-                              {item.time}
-                            </span>
-                            <span className="text-[9px] bg-zinc-850 border border-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded uppercase font-semibold">
-                              {item.type}
-                            </span>
+                          <div>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-[9px] text-[#00A896] font-mono font-bold bg-[#00A896]/10 px-2 py-0.5 rounded border border-[#00A896]/15">
+                                {item.time}
+                              </span>
+                              <span className="text-[8px] bg-slate-50 border border-slate-200 text-slate-500 px-1.5 py-0.5 rounded uppercase font-semibold font-mono">
+                                {item.type}
+                              </span>
+                            </div>
+                            <p className="text-xs sm:text-sm font-bold text-slate-800 leading-snug mb-3">{item.activity}</p>
                           </div>
-                          <p className="text-sm font-semibold text-white leading-tight mb-3">{item.activity}</p>
-                          <div className="flex justify-between items-center text-[11px] text-slate-500 border-t border-slate-900/50 pt-2">
-                            <span>Cost: {item.cost === 0 ? <strong className="text-sky-400 font-bold uppercase">Free</strong> : <strong className="text-slate-300 font-semibold">${item.cost}</strong>}</span>
-                            <span>Duration: {item.duration}</span>
+                          <div className="flex justify-between items-center text-[10px] text-slate-450 border-t border-slate-100 pt-2 mt-2 font-mono font-bold">
+                            <span>Cost: {item.cost === 0 ? <strong className="text-[#00A896] font-bold">Free</strong> : <strong>${item.cost}</strong>}</span>
+                            <span>{item.duration}</span>
                           </div>
                         </div>
                       ))}
