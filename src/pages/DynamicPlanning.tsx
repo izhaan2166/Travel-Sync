@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Bell, Sparkles, Brain, Compass, DollarSign, CalendarRange, Import, Check, X, ShieldAlert } from 'lucide-react';
 import axios from 'axios';
+import { Navigation } from '../components/Navigation';
 
 interface Expense {
   id: number;
@@ -237,9 +238,10 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] pt-16 text-slate-100 font-sans pb-24">
+    <div className="min-h-screen animate-mesh pt-24 text-slate-100 font-sans pb-24 relative overflow-hidden">
+      <Navigation onBack={onBack} title="AI Itinerary & Planning" />
       {notifications.length > 0 && (
-        <div className="fixed top-4 right-4 bg-sky-500 text-white px-6 py-4 rounded-xl font-bold shadow-[0_0_20px_rgba(14,165,233,0.3)] z-50 flex items-center gap-2 transition duration-300">
+        <div className="fixed top-20 right-4 bg-gradient-to-r from-[#4F9DFF] to-[#7C6CF7] text-white px-6 py-4 rounded-xl font-bold shadow-lg z-50 flex items-center gap-2 transition duration-300">
           <Sparkles className="w-5 h-5 animate-pulse" />
           <span>{notifications[notifications.length - 1]}</span>
           <button onClick={() => setNotifications([])} className="ml-4 hover:scale-110">
@@ -248,31 +250,11 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
         </div>
       )}
 
-      <div className="container mx-auto flex items-center gap-4 mb-8 px-4">
-        <button onClick={onBack} className="p-3 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 rounded-xl transition duration-300 hover:scale-105">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-6 h-6 text-sky-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div>
-          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">
-            Dynamic Planner
-          </h1>
-          <p className="text-slate-400 text-sm">Organize your expenses, tasks, and get AI itinerary recommendations</p>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4">
+      <div className="max-w-[1280px] mx-auto px-6 sm:px-12">
         {/* Main Grid for Budget & Tasks */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           {/* Budget Card */}
-          <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.4)] transition duration-300">
+          <div className="glass-card p-6 rounded-2xl glow-pulse relative">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-sky-400 flex items-center gap-2">
                 <DollarSign className="w-6 h-6 text-sky-400" />
@@ -307,7 +289,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
           </div>
 
           {/* Expense List Card */}
-          <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.4)] transition duration-300">
+          <div className="glass-card p-6 rounded-2xl glow-pulse relative">
             <h3 className="text-xl font-bold text-sky-400 mb-4 flex items-center gap-2">
               <Compass className="w-6 h-6" />
               Expenses
@@ -347,7 +329,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
           </div>
 
           {/* Task Card */}
-          <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.4)] transition duration-300">
+          <div className="glass-card p-6 rounded-2xl glow-pulse relative">
             <h3 className="text-xl font-bold text-sky-400 mb-4 flex items-center gap-2">
               <CalendarRange className="w-6 h-6" />
               Schedule & Tasks
@@ -408,7 +390,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* AI Travel Recommendation Section */}
-        <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-8 rounded-3xl shadow-[0_0_25px_rgba(0,0,0,0.5)] mb-12 animate-fade-in">
+        <div className="glass-card p-8 rounded-3xl glow-pulse mb-12 relative overflow-hidden">
           <div className="flex items-center gap-3 mb-6">
             <Brain className="w-8 h-8 text-sky-400 animate-pulse" />
             <div>
@@ -432,7 +414,7 @@ export function DynamicPlanning({ onBack }: { onBack: () => void }) {
                   placeholder="e.g. Seeking ancient history, serene temples, beautiful autumn scenery, and amazing street food"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white transition focus:ring-1 focus:ring-sky-500 outline-none"
+                  className="w-full glass-input p-3 text-white"
                 />
               </div>
 

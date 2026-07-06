@@ -253,12 +253,12 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] pt-16 text-slate-100 pb-20">
+    <div className="min-h-screen animate-mesh pt-24 text-slate-100 pb-20 relative overflow-hidden">
       <Navigation onBack={onBack} title="Smart Flight Booking" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-[1280px] mx-auto px-6 sm:px-12 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-6xl mx-auto">
           {/* Flight Search Panel */}
-          <div className="lg:col-span-5 neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl shadow-xl">
+          <div className="lg:col-span-5 glass-card p-6 rounded-2xl glow-pulse relative">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400 flex items-center gap-2">
                 <Compass className="w-6 h-6 text-sky-400" />
@@ -307,7 +307,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                       setFromSuggestions(filterAirports(formData.from));
                     }}
                     onBlur={() => setTimeout(() => setShowFromDropdown(false), 200)}
-                    className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition placeholder-slate-750"
+                    className="w-full glass-input p-3 text-white placeholder-slate-500"
                   />
                   {showFromDropdown && fromSuggestions.length > 0 && (
                     <div className="absolute z-50 left-0 mt-1.5 w-[280px] sm:w-[350px] md:w-[450px] bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-2xl max-h-80 overflow-y-auto shadow-2xl p-2 space-y-1">
@@ -351,7 +351,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                       setToSuggestions(filterAirports(formData.to));
                     }}
                     onBlur={() => setTimeout(() => setShowToDropdown(false), 200)}
-                    className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition placeholder-slate-750"
+                    className="w-full glass-input p-3 text-white placeholder-slate-500"
                   />
                   {showToDropdown && toSuggestions.length > 0 && (
                     <div className="absolute z-50 right-0 mt-1.5 w-[280px] sm:w-[350px] md:w-[450px] bg-[#0f172a]/95 backdrop-blur-md border border-slate-700/80 rounded-2xl max-h-80 overflow-y-auto shadow-2xl p-2 space-y-1">
@@ -388,7 +388,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                 <label className="block text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1.5">
                   {tripType === 'round-trip' ? 'Dates (Departure - Return)' : 'Date (Departure)'}
                 </label>
-                <div className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus-within:border-sky-500 rounded-xl p-3 flex items-center gap-2.5 transition">
+                <div className="w-full glass-input p-3 flex items-center gap-2.5">
                   <Calendar className="w-5 h-5 text-sky-400 shrink-0" />
                   <DatePicker
                     selectsRange={tripType === 'round-trip'}
@@ -420,7 +420,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full bg-[#070b13] border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl p-3 text-white outline-none transition text-sm"
+                  className="w-full glass-input p-3 text-white text-sm"
                 >
                   <option value="USD">US Dollar (USD)</option>
                   <option value="EUR">Euro (EUR)</option>
@@ -461,7 +461,7 @@ export function SmartBooking({ onBack }: { onBack: () => void }) {
           {/* Results and Information Panel */}
           <div className="lg:col-span-7 space-y-6">
             {/* Google Flights Callout */}
-            <div className="bg-[#0f172a]/30 border border-sky-500/20 rounded-2xl p-6 flex gap-4 items-start shadow-md">
+            <div className="glass-card p-6 flex gap-4 items-start relative overflow-hidden">
               <Info className="w-8 h-8 text-sky-400 shrink-0 mt-0.5" />
               <div>
                 <h3 className="text-lg font-bold text-sky-300">Live Flights via Google</h3>

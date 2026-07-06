@@ -166,23 +166,23 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] pt-16 text-slate-100">
+    <div className="min-h-screen animate-mesh pt-24 text-slate-100 relative overflow-hidden">
       <Navigation onBack={onBack} title="Interactive Journey Map" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-[1280px] mx-auto px-6 sm:px-12 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div
-            className="md:col-span-3 neon-card bg-[#0f172a]/60 border border-slate-800 p-4 rounded-2xl shadow-xl"
-            style={{ minHeight: '500px' }}
+            className="md:col-span-3 glass-card p-4 rounded-2xl relative"
+            style={{ minHeight: '600px' }}
           >
             <div
               ref={mapElement}
-              className="w-full h-full border border-slate-800 rounded-xl overflow-hidden"
+              className="w-full h-[570px] border border-white/5 rounded-xl overflow-hidden"
             />
           </div>
 
           <div className="space-y-6">
             {/* Step 1: Search Bar for Starting Location */}
-            <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl">
+            <div className="glass-card p-6 rounded-2xl relative">
               <h3 className="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
                 <Search className="w-5 h-5 text-sky-400" />
                 Starting Location
@@ -194,7 +194,7 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyUp={handleSearch}
                 placeholder="Enter starting location..."
-                className="w-full p-3 border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl bg-[#070b13] text-slate-200 outline-none transition"
+                className="w-full glass-input p-3 text-slate-200"
               />
               <ul className={`mt-3 space-y-1.5 max-h-[150px] overflow-y-auto ${isSuggestionsVisible ? '' : 'hidden'}`}>
                 {searchResults.map((result, index) => (
@@ -210,7 +210,7 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
             </div>
 
             {/* Step 2: Search Bar for Destination Location */}
-            <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl">
+            <div className="glass-card p-6 rounded-2xl relative">
               <h3 className="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
                 <Bookmark className="w-5 h-5 text-sky-400" />
                 Destination
@@ -222,7 +222,7 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
                 onChange={(e) => setDestinationQuery(e.target.value)}
                 onKeyUp={handleDestinationSearch}
                 placeholder="Enter destination location..."
-                className="w-full p-3 border border-slate-800 hover:border-slate-700 focus:border-sky-500 rounded-xl bg-[#070b13] text-slate-200 outline-none transition"
+                className="w-full glass-input p-3 text-slate-200"
               />
               <ul
                 className={`mt-3 space-y-1.5 max-h-[150px] overflow-y-auto ${isDestinationSuggestionsVisible ? '' : 'hidden'}`}
@@ -241,10 +241,10 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
 
             {/* Step 3: Start Navigation Button */}
             {isRouteReady && (
-              <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-4 rounded-2xl">
+              <div className="glass-card p-4 rounded-2xl relative">
                 <button
                   onClick={calculateRoute}
-                  className="w-full p-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition duration-200 hover:scale-[1.02]"
+                  className="w-full py-3 glass-btn-primary font-bold"
                 >
                   Start Navigation
                 </button>
@@ -252,7 +252,7 @@ export function InteractiveMaps({ onBack }: { onBack: () => void }) {
             )}
 
             {/* Weather Info */}
-            <div className="neon-card bg-[#0f172a]/60 border border-slate-800 p-6 rounded-2xl">
+            <div className="glass-card p-6 rounded-2xl relative">
               <h3 className="text-lg font-bold text-sky-400 mb-4 flex items-center gap-2">
                 <Sun className="w-5 h-5 text-sky-400" />
                 Weather Conditions

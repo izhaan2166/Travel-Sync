@@ -29,7 +29,7 @@ function App() {
 
   switch (currentPage) {
     case 'welcome':
-      return <WelcomePage onGetStarted={handleGetStarted} />;
+      return <WelcomePage onGetStarted={handleGetStarted} onFeatureClick={handleFeatureClick} />;
     case 'features':
       return <FeaturesPage onFeatureClick={handleFeatureClick} onBack={handleBackToWelcome} />;
     case 'smart-booking':
